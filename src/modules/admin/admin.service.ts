@@ -1,26 +1,58 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAdminDto } from './dto/create-admin.dto';
-import { UpdateAdminDto } from './dto/update-admin.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from '@modules/users/entities/user.entity';
+import { Device } from '@modules/devices/entities/device.entity';
+import { SensorReading } from '@modules/sensor-readings/entities/sensor-reading.entity';
+import { UserSubscription } from '@modules/subscription/entities/user-subscription.entity';
+import { DeviceStatus } from '../devices/types/device-status.enum';
+import { SubscriptionStatus } from '../subscription/types/subscription-status.enum';
 
 @Injectable()
 export class AdminService {
-  create(createAdminDto: CreateAdminDto) {
-    return 'This action adds a new admin';
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    @InjectRepository(Device)
+    private deviceRepository: Repository<Device>,
+    @InjectRepository(SensorReading)
+    private readingRepository: Repository<SensorReading>,
+    @InjectRepository(UserSubscription)
+    private subscriptionRepository: Repository<UserSubscription>,
+  ) {}
+
+  async getDashboardStats() {
+    const totalUsers = await this.userRepository.count();
+    const totalDevices = await this.deviceRepository.count();
+    const activeDevices = await this.deviceRepository.count({ where: { status: DeviceStatus.ACTIVE } });
+    const totalReadings = await this.readingRepository.count();
+    const activeSubscriptions = await this.subscriptionRepository.count({ where: { status: SubscriptionStatus.ACTIVE  } });
+
+    return {
+      totalUsers,
+      totalDevices,
+      activeDevices,
+      totalReadings,
+      activeSubscriptions,
+      timestamp: new Date(),
+    };
   }
 
-  findAll() {
-    return `This action returns all admin`;
+  async getRecentUsers(limit: number = 10) {
+    return this.userRepository.find({
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} admin`;
-  }
+  async getSystemHealth() {
+    const offlineDevices = await this.deviceRepository.count({ where: { status: DeviceStatus.OFFLINE } });
+    const maintenanceDevices = await this.deviceRepository.count({ where: { status: DeviceStatus.MAINTENANCE } });
 
-  update(id: number, updateAdminDto: UpdateAdminDto) {
-    return `This action updates a #${id} admin`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} admin`;
+    return {
+      status: offlineDevices > 5 ? 'warning' : 'healthy',
+      offlineDevices,
+      maintenanceDevices,
+    };
   }
 }

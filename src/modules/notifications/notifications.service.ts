@@ -1,26 +1,61 @@
 import { Injectable } from '@nestjs/common';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
+import * as Handlebars from 'handlebars';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class NotificationsService {
-  create(createNotificationDto: CreateNotificationDto) {
-    return 'This action adds a new notification';
+  private transporter: nodemailer.Transporter;
+
+  constructor(private configService: ConfigService) {
+    this.transporter = nodemailer.createTransport({
+      host: this.configService.get<string>('email.host'),
+      port: this.configService.get<number>('email.port'),
+      secure: this.configService.get<boolean>('email.secure'),
+      auth: {
+        user: this.configService.get<string>('email.user'),
+        pass: this.configService.get<string>('email.password'),
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all notifications`;
+  async sendEmail(to: string, subject: string, html: string): Promise<void> {
+    try {
+      await this.transporter.sendMail({
+        from: this.configService.get<string>('email.from'),
+        to,
+        subject,
+        html,
+      });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      throw error;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} notification`;
+  async sendSuddenChangeAlert(deviceId: number, changeType: string, magnitude: number): Promise<void> {
+    const html = `
+      <h2>⚠️ Sudden Environmental Change Detected</h2>
+      <p>Device ID: ${deviceId}</p>
+      <p>Change Type: ${changeType}</p>
+      <p>Magnitude: ${magnitude}</p>
+      <p>Please check your plants immediately!</p>
+    `;
+
+    // In production, get user email from deviceId
+    await this.sendEmail('user@example.com', 'Plant Alert: Sudden Change Detected', html);
   }
 
-  update(id: number, updateNotificationDto: UpdateNotificationDto) {
-    return `This action updates a #${id} notification`;
-  }
+  async sendWelcomeEmail(email: string, name: string): Promise<void> {
+    const html = `
+      <h2>Welcome to Plant Monitoring System! 🌱</h2>
+      <p>Hi ${name},</p>
+      <p>Thank you for joining our plant monitoring community!</p>
+      <p>Get started by connecting your IoT device and selecting your plants.</p>
+    `;
 
-  remove(id: number) {
-    return `This action removes a #${id} notification`;
+    await this.sendEmail(email, 'Welcome to Plant Monitoring System', html);
   }
 }
