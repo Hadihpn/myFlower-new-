@@ -1,26 +1,253 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Between } from 'typeorm';
+import { SensorReading } from './entities/sensor-reading.entity';
 import { CreateSensorReadingDto } from './dto/create-sensor-reading.dto';
-import { UpdateSensorReadingDto } from './dto/update-sensor-reading.dto';
+import { SensorQueryDto } from './dto/sensor-query.dto';
+import { DevicesService } from '@modules/devices/devices.service';
+import { SensorVerificationService } from '@modules/sensor-verification/sensor-verification.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SensorReadingsService {
-  create(createSensorReadingDto: CreateSensorReadingDto) {
-    return 'This action adds a new sensorReading';
+  private readonly suddenChangeThresholds: {
+    temperature: number;
+    moisture: number;
+    light: number;
+  };
+
+  constructor(
+    @InjectRepository(SensorReading)
+    private readingRepository: Repository<SensorReading>,
+    private devicesService: DevicesService,
+    private verificationService: SensorVerificationService,
+    private configService: ConfigService,
+  ) {
+    this.suddenChangeThresholds = {
+      temperature: this.configService.get<number>('sensor.suddenChange.temperature'),
+      moisture: this.configService.get<number>('sensor.suddenChange.moisture'),
+      light: this.configService.get<number>('sensor.suddenChange.light'),
+    };
   }
 
-  findAll() {
-    return `This action returns all sensorReadings`;
+  async createReading(
+    deviceId: string,
+    createReadingDto: CreateSensorReadingDto,
+  ): Promise<SensorReading> {
+    // Verify device exists
+    const device = await this.devicesService.findDeviceByDeviceId(deviceId);
+
+    // Apply calibration if exists
+    const calibratedData = this.applyCalibration(createReadingDto, device.calibration);
+
+    // Create reading
+    const reading = this.readingRepository.create({
+      deviceId: device.id,
+      temperature: calibratedData.temperature,
+      moisture: calibratedData.moisture,
+      light: calibratedData.light,
+      humidity: calibratedData.humidity,
+      timestamp: createReadingDto.timestamp
+        ? new Date(createReadingDto.timestamp)
+        : new Date(),
+      verified: true, // Will be updated if verification needed
+    });
+
+    const savedReading = await this.readingRepository.save(reading);
+
+    // Update device last seen
+    await this.devicesService.updateLastSeen(deviceId);
+
+    // Check for sudden changes
+    await this.checkSuddenChanges(device.id, savedReading);
+
+    return savedReading;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} sensorReading`;
+  async getDeviceReadings(
+    deviceId: number,
+    queryDto: SensorQueryDto,
+  ): Promise<SensorReading[]> {
+    const { startDate, endDate, limit = 100 } = queryDto;
+
+    const query = this.readingRepository
+      .createQueryBuilder('reading')
+      .where('reading.deviceId = :deviceId', { deviceId })
+      .orderBy('reading.timestamp', 'DESC')
+      .limit(limit);
+
+    if (startDate) {
+      query.andWhere('reading.timestamp >= :startDate', {
+        startDate: new Date(startDate),
+      });
+    }
+
+    if (endDate) {
+      query.andWhere('reading.timestamp <= :endDate', {
+        endDate: new Date(endDate),
+      });
+    }
+
+    return query.getMany();
   }
 
-  update(id: number, updateSensorReadingDto: UpdateSensorReadingDto) {
-    return `This action updates a #${id} sensorReading`;
+  async getLatestReading(deviceId: number): Promise<SensorReading | null> {
+    return this.readingRepository.findOne({
+      where: { deviceId },
+      order: { timestamp: 'DESC' },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} sensorReading`;
+  async getAverageReadings(
+    deviceId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<{
+    avgTemperature: number;
+    avgMoisture: number;
+    avgLight: number;
+    avgHumidity: number;
+  }> {
+    const result = await this.readingRepository
+      .createQueryBuilder('reading')
+      .select('AVG(reading.temperature)', 'avgTemperature')
+      .addSelect('AVG(reading.moisture)', 'avgMoisture')
+      .addSelect('AVG(reading.light)', 'avgLight')
+      .addSelect('AVG(reading.humidity)', 'avgHumidity')
+      .where('reading.deviceId = :deviceId', { deviceId })
+      .andWhere('reading.timestamp BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      })
+      .getRawOne();
+
+    return {
+      avgTemperature: parseFloat(result.avgTemperature) || 0,
+      avgMoisture: parseFloat(result.avgMoisture) || 0,
+      avgLight: parseFloat(result.avgLight) || 0,
+      avgHumidity: parseFloat(result.avgHumidity) || 0,
+    };
+  }
+
+  async getDailyStats(
+    deviceId: number,
+    date: Date,
+  ): Promise<{
+    minTemperature: number;
+    maxTemperature: number;
+    avgTemperature: number;
+    minMoisture: number;
+    maxMoisture: number;
+    avgMoisture: number;
+    minLight: number;
+    maxLight: number;
+    avgLight: number;
+  }> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const result = await this.readingRepository
+      .createQueryBuilder('reading')
+      .select('MIN(reading.temperature)', 'minTemperature')
+      .addSelect('MAX(reading.temperature)', 'maxTemperature')
+      .addSelect('AVG(reading.temperature)', 'avgTemperature')
+      .addSelect('MIN(reading.moisture)', 'minMoisture')
+      .addSelect('MAX(reading.moisture)', 'maxMoisture')
+      .addSelect('AVG(reading.moisture)', 'avgMoisture')
+      .addSelect('MIN(reading.light)', 'minLight')
+      .addSelect('MAX(reading.light)', 'maxLight')
+      .addSelect('AVG(reading.light)', 'avgLight')
+      .where('reading.deviceId = :deviceId', { deviceId })
+      .andWhere('reading.timestamp BETWEEN :startOfDay AND :endOfDay', {
+        startOfDay,
+        endOfDay,
+      })
+      .getRawOne();
+
+    return {
+      minTemperature: parseFloat(result.minTemperature) || 0,
+      maxTemperature: parseFloat(result.maxTemperature) || 0,
+      avgTemperature: parseFloat(result.avgTemperature) || 0,
+      minMoisture: parseFloat(result.minMoisture) || 0,
+      maxMoisture: parseFloat(result.maxMoisture) || 0,
+      avgMoisture: parseFloat(result.avgMoisture) || 0,
+      minLight: parseFloat(result.minLight) || 0,
+      maxLight: parseFloat(result.maxLight) || 0,
+      avgLight: parseFloat(result.avgLight) || 0,
+    };
+  }
+
+  private applyCalibration(
+    data: CreateSensorReadingDto,
+    calibration: any,
+  ): CreateSensorReadingDto {
+    if (!calibration) return data;
+
+    return {
+      ...data,
+      temperature: data.temperature + (calibration.temperatureOffset || 0),
+      moisture: data.moisture + (calibration.moistureOffset || 0),
+      light: data.light + (calibration.lightOffset || 0),
+    };
+  }
+
+  private async checkSuddenChanges(
+    deviceId: number,
+    currentReading: SensorReading,
+  ): Promise<void> {
+    // Get previous reading
+    const previousReading = await this.readingRepository.findOne({
+      where: { deviceId },
+      order: { timestamp: 'DESC' },
+      skip: 1,
+    });
+
+    if (!previousReading) {
+      return; // No previous reading to compare
+    }
+
+    // Check temperature change
+    const tempChange = Math.abs(
+      currentReading.temperature - previousReading.temperature,
+    );
+    if (tempChange >= this.suddenChangeThresholds.temperature) {
+      await this.verificationService.createVerification(
+        deviceId,
+        currentReading.id,
+        'temperature_change',
+        tempChange,
+      );
+    }
+
+    // Check moisture change
+    const moistureChange = Math.abs(
+      currentReading.moisture - previousReading.moisture,
+    );
+    if (moistureChange >= this.suddenChangeThresholds.moisture) {
+      await this.verificationService.createVerification(
+        deviceId,
+        currentReading.id,
+        'moisture_change',
+        moistureChange,
+      );
+    }
+
+    // Check light change
+    const lightChange = Math.abs(currentReading.light - previousReading.light);
+    if (lightChange >= this.suddenChangeThresholds.light) {
+      await this.verificationService.createVerification(
+        deviceId,
+        currentReading.id,
+        'light_change',
+        lightChange,
+      );
+    }
   }
 }
