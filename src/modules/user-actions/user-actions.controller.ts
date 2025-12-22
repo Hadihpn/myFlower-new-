@@ -1,34 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, ParseIntPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UserActionsService } from './user-actions.service';
-import { CreateUserActionDto } from './dto/create-user-action.dto';
-import { UpdateUserActionDto } from './dto/update-user-action.dto';
+import { CreateActionDto } from './dto/create-action.dto';
+import { CurrentUser } from '@common/decorators/current-user.decorator';
 
+@ApiTags('User Actions')
+@ApiBearerAuth('JWT')
 @Controller('user-actions')
 export class UserActionsController {
-  constructor(private readonly userActionsService: UserActionsService) {}
+  constructor(private readonly actionsService: UserActionsService) {}
 
   @Post()
-  create(@Body() createUserActionDto: CreateUserActionDto) {
-    return this.userActionsService.create(createUserActionDto);
+  @ApiOperation({ summary: 'Log a care action' })
+  @ApiResponse({ status: 201, description: 'Action logged successfully' })
+  createAction(@CurrentUser('id') userId: number, @Body() createActionDto: CreateActionDto) {
+    return this.actionsService.createAction(userId, createActionDto);
   }
 
-  @Get()
-  findAll() {
-    return this.userActionsService.findAll();
+  @Get('my-actions')
+  @ApiOperation({ summary: 'Get user action history' })
+  @ApiResponse({ status: 200, description: 'List of user actions' })
+  getUserActions(@CurrentUser('id') userId: number, @Query('limit') limit?: number) {
+    return this.actionsService.getUserActions(userId, limit);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userActionsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserActionDto: UpdateUserActionDto) {
-    return this.userActionsService.update(+id, updateUserActionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userActionsService.remove(+id);
+  @Get('selection/:selectionId')
+  @ApiOperation({ summary: 'Get actions for specific selection' })
+  @ApiResponse({ status: 200, description: 'List of selection actions' })
+  getSelectionActions(@Param('selectionId', ParseIntPipe) selectionId: number) {
+    return this.actionsService.getSelectionActions(selectionId);
   }
 }

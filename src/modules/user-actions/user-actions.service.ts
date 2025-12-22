@@ -1,26 +1,52 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserActionDto } from './dto/create-user-action.dto';
-import { UpdateUserActionDto } from './dto/update-user-action.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Between } from 'typeorm';
+import { UserAction } from './entities/user-action.entity';
+import { CreateActionDto } from './dto/create-action.dto';
+import { ActionType } from './types/action-type.enum';
 
 @Injectable()
 export class UserActionsService {
-  create(createUserActionDto: CreateUserActionDto) {
-    return 'This action adds a new userAction';
+  constructor(
+    @InjectRepository(UserAction)
+    private actionRepository: Repository<UserAction>,
+  ) {}
+
+  async createAction(userId: number, createActionDto: CreateActionDto): Promise<UserAction> {
+    const { selectionId, ...actionData } = createActionDto;
+
+    const action = this.actionRepository.create({
+      userId,
+      selectionId,
+      deviceId: 0, // Will be set from selection
+      ...actionData,
+      actionDate: actionData.actionDate ? new Date(actionData.actionDate) : new Date(),
+    });
+
+    return this.actionRepository.save(action);
   }
 
-  findAll() {
-    return `This action returns all userActions`;
+  async getSelectionActions(selectionId: number): Promise<UserAction[]> {
+    return this.actionRepository.find({
+      where: { selectionId },
+      order: { actionDate: 'DESC' },
+      take: 50,
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} userAction`;
+  async getLastAction(selectionId: number, actionType: ActionType): Promise<UserAction | null> {
+    return this.actionRepository.findOne({
+      where: { selectionId, actionType },
+      order: { actionDate: 'DESC' },
+    });
   }
 
-  update(id: number, updateUserActionDto: UpdateUserActionDto) {
-    return `This action updates a #${id} userAction`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} userAction`;
+  async getUserActions(userId: number, limit: number = 50): Promise<UserAction[]> {
+    return this.actionRepository.find({
+      where: { userId },
+      relations: ['selection'],
+      order: { actionDate: 'DESC' },
+      take: limit,
+    });
   }
 }
