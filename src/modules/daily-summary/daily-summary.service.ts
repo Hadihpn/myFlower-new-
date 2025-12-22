@@ -1,26 +1,40 @@
 import { Injectable } from '@nestjs/common';
-import { CreateDailySummaryDto } from './dto/create-daily-summary.dto';
-import { UpdateDailySummaryDto } from './dto/update-daily-summary.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { DailySummary } from './entities/daily-summary.entity';
+import { SensorReadingsService } from '@modules/sensor-readings/sensor-readings.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class DailySummaryService {
-  create(createDailySummaryDto: CreateDailySummaryDto) {
-    return 'This action adds a new dailySummary';
+  constructor(
+    @InjectRepository(DailySummary)
+    private summaryRepository: Repository<DailySummary>,
+    private sensorReadingsService: SensorReadingsService,
+  ) {}
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async generateDailySummaries(): Promise<void> {
+    console.log('Generating daily summaries...');
+    
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    // In production, get all active devices and generate summaries
+    // This is a placeholder implementation
   }
 
-  findAll() {
-    return `This action returns all dailySummary`;
+  async getSummary(deviceId: number, date: Date): Promise<DailySummary | null> {
+    return this.summaryRepository.findOne({
+      where: { deviceId, date },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} dailySummary`;
-  }
-
-  update(id: number, updateDailySummaryDto: UpdateDailySummaryDto) {
-    return `This action updates a #${id} dailySummary`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} dailySummary`;
+  async getDeviceSummaries(deviceId: number, limit: number = 30): Promise<DailySummary[]> {
+    return this.summaryRepository.find({
+      where: { deviceId },
+      order: { date: 'DESC' },
+      take: limit,
+    });
   }
 }
