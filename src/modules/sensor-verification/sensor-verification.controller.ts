@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { SensorVerificationService } from './sensor-verification.service';
 import { CreateSensorVerificationDto } from './dto/create-sensor-verification.dto';
-import { UpdateSensorVerificationDto } from './dto/update-sensor-verification.dto';
+import { UpdateSensorVerificationDto } from './dto/verification-reading.dto.ts';
 
 @Controller('sensor-verification')
 export class SensorVerificationController {
