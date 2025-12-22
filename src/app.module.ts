@@ -24,8 +24,8 @@ import { AdminModule } from './modules/admin/admin.module';
 import { DailySummaryModule } from './modules/daily-summary/daily-summary.module';
 
 // Guards
-import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
   imports: [
