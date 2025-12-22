@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: plant_monitoring_db
+    restart: always
+    environment:
+      POSTGRES_DB: plant_monitoring
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - plant_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: plant_monitoring_app
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres123
+      DATABASE_NAME: plant_monitoring
+    depends_on:
+      - postgres
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    networks:
+      - plant_network
+
+volumes:
+  postgres_data:
+
+networks:
+  plant_network:
+    driver: bridge
+
