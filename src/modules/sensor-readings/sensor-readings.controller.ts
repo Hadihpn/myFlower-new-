@@ -1,26 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  ParseIntPipe,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiSecurity,
-} from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiSecurity } from '@nestjs/swagger';
 import { SensorReadingsService } from './sensor-readings.service';
 import { CreateSensorReadingDto } from './dto/create-sensor-reading.dto';
 import { SensorQueryDto } from './dto/sensor-query.dto';
 import { DeviceAuthGuard } from '@common/guards/device-auth.guard';
 import { CurrentDevice } from '@common/decorators/device-auth.decorator';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
+import { Public } from '@common/decorators/public.decorator';
 
 @ApiTags('Sensor Readings')
 @Controller('sensor-readings')
@@ -28,6 +14,7 @@ export class SensorReadingsController {
   constructor(private readonly sensorReadingsService: SensorReadingsService) {}
 
   @Post()
+  @Public()
   @UseGuards(DeviceAuthGuard)
   @ApiSecurity('DeviceId')
   @ApiSecurity('DeviceToken')
@@ -53,7 +40,7 @@ export class SensorReadingsController {
   }
 
   @Get('device/:deviceId/latest')
-  @ApiBearerAuth('JWT')
+  // @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Get latest sensor reading' })
   @ApiResponse({ status: 200, description: 'Latest sensor reading' })
   async getLatestReading(@Param('deviceId', ParseIntPipe) deviceId: number) {
@@ -61,7 +48,7 @@ export class SensorReadingsController {
   }
 
   @Get('device/:deviceId/daily-stats')
-  @ApiBearerAuth('JWT')
+  // @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Get daily statistics' })
   @ApiResponse({ status: 200, description: 'Daily statistics' })
   async getDailyStats(

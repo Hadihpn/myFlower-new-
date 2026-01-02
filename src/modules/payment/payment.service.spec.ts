@@ -7,7 +7,7 @@ import { SubscriptionService } from '@modules/subscription/subscription.service'
 import { UsersService } from '@modules/users/users.service';
 import { PaymentStatus } from './types/payment-status.enum';
 import { NotFoundException } from '@nestjs/common';
-import { ZarinpalService } from './zrinpal.service';
+import { ZarinpalService } from './zarinpal.service';
 
 describe('PaymentService', () => {
   let service: PaymentService;

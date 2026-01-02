@@ -45,7 +45,7 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
         username: configService.get('database.username'),
         password: configService.get('database.password'),
         database: configService.get('database.database'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        entities: [__dirname + '/**/*.entity.js'],
         synchronize: configService.get('database.synchronize'),
         logging: configService.get('database.logging'),
       }),

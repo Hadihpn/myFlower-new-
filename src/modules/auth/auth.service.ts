@@ -8,13 +8,14 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '@modules/users/entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthResponse } from './interfaces/auth-response.interface';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { HashUtil } from '@common/utils/hash.util';
+import { User } from '../users/entities/user.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +24,10 @@ export class AuthService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private notificationsService: NotificationsService,
   ) {}
+
+  
 
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
     const { email, password, fullName, phoneNumber } = registerDto;
@@ -32,7 +36,6 @@ export class AuthService {
     const existingUser = await this.userRepository.findOne({
       where: { email },
     });
-
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
@@ -49,23 +52,23 @@ export class AuthService {
     });
 
     await this.userRepository.save(user);
-
+await this.notificationsService.sendWelcomeEmail(user.email, user.fullName);
     // Generate tokens
     return this.generateTokens(user);
   }
 
   async login(loginDto: LoginDto): Promise<AuthResponse> {
     const { email, password } = loginDto;
-
     // Find user
-    const user = await this.userRepository.findOne({
-      where: { email },
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password') // 👈 explicitly include password
+      .where('user.email = :email', { email })
+      .getOne();
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
     // Verify password
     const isPasswordValid = await HashUtil.compare(password, user.password);
 
@@ -112,10 +115,7 @@ export class AuthService {
     }
 
     // Verify current password
-    const isPasswordValid = await HashUtil.compare(
-      currentPassword,
-      user.password,
-    );
+    const isPasswordValid = await HashUtil.compare(currentPassword, user.password);
 
     if (!isPasswordValid) {
       throw new BadRequestException('Current password is incorrect');

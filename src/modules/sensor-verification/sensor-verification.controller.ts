@@ -1,34 +1,27 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { SensorVerificationService } from './sensor-verification.service';
-import { CreateSensorVerificationDto } from './dto/create-sensor-verification.dto';
-import { UpdateSensorVerificationDto } from './dto/verification-reading.dto.ts';
+import { CurrentUser } from '@common/decorators/current-user.decorator';
 
+@ApiTags('Sensor Verification')
+@ApiBearerAuth('JWT')
 @Controller('sensor-verification')
 export class SensorVerificationController {
-  constructor(private readonly sensorVerificationService: SensorVerificationService) {}
+  constructor(
+    private readonly verificationService: SensorVerificationService,
+  ) {}
 
-  @Post()
-  create(@Body() createSensorVerificationDto: CreateSensorVerificationDto) {
-    return this.sensorVerificationService.create(createSensorVerificationDto);
+  @Get('device/:deviceId/pending')
+  @ApiOperation({ summary: 'Get pending verifications for device' })
+  @ApiResponse({ status: 200, description: 'List of pending verifications' })
+  getPendingVerifications(@Param('deviceId', ParseIntPipe) deviceId: number) {
+    return this.verificationService.getPendingVerifications(deviceId);
   }
 
-  @Get()
-  findAll() {
-    return this.sensorVerificationService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.sensorVerificationService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSensorVerificationDto: UpdateSensorVerificationDto) {
-    return this.sensorVerificationService.update(+id, updateSensorVerificationDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.sensorVerificationService.remove(+id);
+  @Get('device/:deviceId/history')
+  @ApiOperation({ summary: 'Get verification history for device' })
+  @ApiResponse({ status: 200, description: 'Verification history' })
+  getVerificationHistory(@Param('deviceId', ParseIntPipe) deviceId: number) {
+    return this.verificationService.getDeviceVerificationHistory(deviceId);
   }
 }

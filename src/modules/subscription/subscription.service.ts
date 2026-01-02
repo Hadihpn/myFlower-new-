@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { SubscriptionTier } from './entities/subscription-tier.entity';
 import { UserSubscription } from './entities/user-subscription.entity';
 import { CreateSubscriptionTierDto } from './dto/create-subscription-tier.dto';
@@ -146,10 +146,15 @@ export class SubscriptionService {
 
     await this.subscriptionRepository.save(subscription);
   }
-
+async getUserSubscription(userId: number): Promise<UserSubscription | null> {
+    return this.subscriptionRepository.findOne({
+      where: { userId },
+      relations: ['tier'],
+    });
+  }
   async getUserActiveSubscription(userId: number): Promise<UserSubscription | null> {
     return this.subscriptionRepository.findOne({
-      where: { userId, status: SubscriptionStatus.ACTIVE },
+      where: { userId, status: SubscriptionStatus.ACTIVE , endDate: MoreThanOrEqual(new Date())},
       relations: ['tier'],
     });
   }

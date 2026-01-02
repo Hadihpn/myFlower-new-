@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Scope,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,7 +11,7 @@ import { PaymentRequestDto } from './dto/payment-request.dto';
 import { PaymentStatus } from './types/payment-status.enum';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { UsersService } from '@modules/users/users.service';
-import { ZarinpalService } from './zrinpal.service';
+import { ZarinpalService } from './zarinpal.service';
 
 @Injectable()
 export class PaymentService {

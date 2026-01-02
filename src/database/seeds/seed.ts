@@ -1,7 +1,7 @@
 // src/database/seeds/seed.ts
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import ormconfig from 'ormconfig';
+import ormconfig from '../../../ormconfig';
 
 async function seed() {
   const dataSource = new DataSource(ormconfig.options);

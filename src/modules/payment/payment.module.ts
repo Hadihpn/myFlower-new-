@@ -5,7 +5,7 @@ import { PaymentController } from './payment.controller';
 import { Payment } from './entities/payment.entity';
 import { SubscriptionModule } from '@modules/subscription/subscription.module';
 import { UsersModule } from '@modules/users/users.module';
-import { ZarinpalService } from './zrinpal.service';
+import { ZarinpalService } from './zarinpal.service';
 
 @Module({
   imports: [

@@ -34,23 +34,13 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { UserRole } from '@modules/users/types/user-role.enum';
 import { Public } from '@common/decorators/public.decorator';
+import { 
+  plantImageStorage, 
+  packageImageStorage, 
+  imageFileFilter, 
+  maxFileSize 
+} from '@config/multer.config';
 
-// Multer configuration for file upload
-const plantStorage = diskStorage({
-  destination: './uploads/plants',
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `plant-${uniqueSuffix}${extname(file.originalname)}`);
-  },
-});
-
-const packageStorage = diskStorage({
-  destination: './uploads/packages',
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `package-${uniqueSuffix}${extname(file.originalname)}`);
-  },
-});
 
 @ApiTags('Plants')
 @ApiBearerAuth('JWT')
@@ -108,7 +98,13 @@ export class PlantsController {
   @Post('groups/:id/image')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  @UseInterceptors(FileInterceptor('image', { storage: plantStorage }))
+   @UseInterceptors(
+    FileInterceptor('image', {
+      storage: plantImageStorage, // From config
+      fileFilter: imageFileFilter, // From config
+      limits: { fileSize: maxFileSize }, // From config
+    })
+  )
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -190,7 +186,13 @@ export class PlantsController {
   @Post('species/:id/image')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  @UseInterceptors(FileInterceptor('image', { storage: plantStorage }))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: plantImageStorage, // From config
+      fileFilter: imageFileFilter, // From config
+      limits: { fileSize: maxFileSize }, // From config
+    })
+  )
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -272,7 +274,13 @@ export class PlantsController {
   @Post('packages/:id/image')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
-  @UseInterceptors(FileInterceptor('image', { storage: packageStorage }))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: packageImageStorage, // From config
+      fileFilter: imageFileFilter,
+      limits: { fileSize: maxFileSize },
+    })
+  )
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {

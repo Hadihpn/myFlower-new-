@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Device } from '@modules/devices/entities/device.entity';
@@ -21,14 +16,23 @@ export class DeviceAuthGuard implements CanActivate {
     const deviceId = request.headers['x-device-id'];
     const deviceToken = request.headers['x-device-token'];
 
+    console.log('deviceId :', deviceId);
+    console.log('deviceToken :', deviceToken);
+
     if (!deviceId || !deviceToken) {
       throw new UnauthorizedException('Device credentials required');
     }
-
-    const device = await this.deviceRepository.findOne({
-      where: { deviceId },
-      relations: ['user'],
-    });
+    const device = await this.deviceRepository
+      .createQueryBuilder('device')
+      .addSelect('device.tokenHash') // 👈 explicitly include password
+      .where('device.deviceId = :deviceId', { deviceId })
+      .leftJoinAndSelect('device.user', 'user')
+      .getOne();
+    // const device = await this.deviceRepository.findOne({
+    //   where: { deviceId },
+    //   relations: ['user'],
+    // });
+    console.log('device', device);
 
     if (!device) {
       throw new UnauthorizedException('Device not found');

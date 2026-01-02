@@ -4,14 +4,18 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-// import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-// import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import * as express from 'express';
 import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  // Database connection logging
+  console.log('🔗 Database connection initiated...');
+  console.log(`📊 Connected to: ${configService.get('database.host')}:${configService.get('database.port')}/${configService.get('database.database')}`);
 
   // Global prefix
   app.setGlobalPrefix('api');
@@ -98,6 +102,7 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`🚀 Application is running on: http://localhost:${port}`);
+  console.log(`✅ Database connected successfully!`);
   console.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
 }
 

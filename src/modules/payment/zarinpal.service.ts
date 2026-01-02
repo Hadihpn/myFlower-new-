@@ -41,6 +41,17 @@ export class ZarinpalService {
     mobile?: string,
   ): Promise<{ authority: string; paymentUrl: string }> {
     try {
+      console.log("requestUrl",this.requestUrl )
+      console.log("metadata",{
+          merchant_id: this.merchantId,
+          amount: amount * 10, // Convert to Rials (Toman * 10)
+          description,
+          callback_url: this.callbackUrl,
+          metadata: {
+            email: email || '',
+            mobile: mobile || '',
+          },
+        }, )
       const response = await axios.post<ZarinpalRequestResponse>(
         this.requestUrl,
         {
@@ -54,6 +65,7 @@ export class ZarinpalService {
           },
         },
       );
+      console.log("response",response);
 
       if (response.data.data.code !== 100) {
         throw new BadRequestException(

@@ -3,7 +3,14 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
+      "assets": [
+      {
+        "include": "**/*.hbs",
+        "outDir": "dist"
+      }
+    ],
     "deleteOutDir": true,
-    "webpack": true
+    "webpack": false
   }
+  
 }
