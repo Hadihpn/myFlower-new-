@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <body style="
+    margin: 0;
+    padding: 0;
+    background-color: #f9fafb;
+    font-family: Arial, Helvetica, sans-serif;
+  ">
+
+    <div style="
+      max-width: 600px;
+      margin: 30px auto;
+      background-color: #ffffff;
+      padding: 24px;
+      border-radius: 8px;
+    ">
+
+      <h2 style="
+        margin-top: 0;
+        color: #111827;
+        font-size: 20px;
+      ">
+        {{title}}
+      </h2>
+
+      {{#each messages}}
+        <p style="
+          margin: 8px 0;
+          padding-left: 14px;
+          border-left: 3px solid #4f46e5;
+          font-size: 15px;
+          color: #374151;
+          line-height: 1.6;
+        ">
+          {{this}}
+        </p>
+      {{/each}}
+
+      <p style="
+        margin-top: 24px;
+        font-size: 14px;
+        color: #6b7280;
+      ">
+        — {{signature}}
+      </p>
+
+    </div>
+
+  </body>
+</html>

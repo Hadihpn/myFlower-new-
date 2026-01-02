@@ -1,0 +1,31 @@
+import { PlantsService } from './plants.service';
+import { CreatePlantGroupDto } from './dto/create-plant-group.dto';
+import { UpdatePlantGroupDto } from './dto/update-plant-group.dto';
+import { CreatePlantSpeciesDto } from './dto/create-plant-species.dto';
+import { UpdatePlantSpeciesDto } from './dto/update-plant-species.dto';
+import { CreatePlantPackageDto } from './dto/create-plant-package.dto';
+import { UpdatePlantPackageDto } from './dto/update-plant-package.dto';
+export declare class PlantsController {
+    private readonly plantsService;
+    constructor(plantsService: PlantsService);
+    createGroup(createGroupDto: CreatePlantGroupDto): Promise<import("./entities/plant-group.entity").PlantGroup>;
+    findAllGroups(): Promise<import("./entities/plant-group.entity").PlantGroup[]>;
+    findGroupById(id: number): Promise<import("./entities/plant-group.entity").PlantGroup>;
+    updateGroup(id: number, updateGroupDto: UpdatePlantGroupDto): Promise<import("./entities/plant-group.entity").PlantGroup>;
+    deleteGroup(id: number): Promise<void>;
+    uploadGroupImage(id: number, file: Express.Multer.File): Promise<import("./entities/plant-group.entity").PlantGroup>;
+    createSpecies(createSpeciesDto: CreatePlantSpeciesDto): Promise<import("./entities/plant-species.entity").PlantSpecies>;
+    findAllSpecies(): Promise<import("./entities/plant-species.entity").PlantSpecies[]>;
+    findSpeciesByCategory(category: string): Promise<import("./entities/plant-species.entity").PlantSpecies[]>;
+    findSpeciesById(id: number): Promise<import("./entities/plant-species.entity").PlantSpecies>;
+    updateSpecies(id: number, updateSpeciesDto: UpdatePlantSpeciesDto): Promise<import("./entities/plant-species.entity").PlantSpecies>;
+    deleteSpecies(id: number): Promise<void>;
+    uploadSpeciesImage(id: number, file: Express.Multer.File): Promise<import("./entities/plant-species.entity").PlantSpecies>;
+    createPackage(createPackageDto: CreatePlantPackageDto): Promise<import("./entities/plant-package.entity").PlantPackage>;
+    findAllPackages(): Promise<import("./entities/plant-package.entity").PlantPackage[]>;
+    findPopularPackages(): Promise<import("./entities/plant-package.entity").PlantPackage[]>;
+    findPackageById(id: number): Promise<import("./entities/plant-package.entity").PlantPackage>;
+    updatePackage(id: number, updatePackageDto: UpdatePlantPackageDto): Promise<import("./entities/plant-package.entity").PlantPackage>;
+    deletePackage(id: number): Promise<void>;
+    uploadPackageImage(id: number, file: Express.Multer.File): Promise<import("./entities/plant-package.entity").PlantPackage>;
+}

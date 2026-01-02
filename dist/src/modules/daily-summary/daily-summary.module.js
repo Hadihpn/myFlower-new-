@@ -1,0 +1,32 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DailySummaryModule = void 0;
+const common_1 = require("@nestjs/common");
+const typeorm_1 = require("@nestjs/typeorm");
+const schedule_1 = require("@nestjs/schedule");
+const daily_summary_service_1 = require("./daily-summary.service");
+const daily_summary_controller_1 = require("./daily-summary.controller");
+const daily_summary_entity_1 = require("./entities/daily-summary.entity");
+const sensor_readings_module_1 = require("../sensor-readings/sensor-readings.module");
+let DailySummaryModule = class DailySummaryModule {
+};
+exports.DailySummaryModule = DailySummaryModule;
+exports.DailySummaryModule = DailySummaryModule = __decorate([
+    (0, common_1.Module)({
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([daily_summary_entity_1.DailySummary]),
+            schedule_1.ScheduleModule.forRoot(),
+            sensor_readings_module_1.SensorReadingsModule,
+        ],
+        controllers: [daily_summary_controller_1.DailySummaryController],
+        providers: [daily_summary_service_1.DailySummaryService],
+        exports: [daily_summary_service_1.DailySummaryService],
+    })
+], DailySummaryModule);
+//# sourceMappingURL=daily-summary.module.js.map

@@ -1,0 +1,215 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SensorReadingsService = void 0;
+const common_1 = require("@nestjs/common");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
+const sensor_reading_entity_1 = require("./entities/sensor-reading.entity");
+const devices_service_1 = require("../devices/devices.service");
+const sensor_verification_service_1 = require("../sensor-verification/sensor-verification.service");
+const config_1 = require("@nestjs/config");
+const user_plant_selections_service_1 = require("../user-plant-selections/user-plant-selections.service");
+const notifications_service_1 = require("../notifications/notifications.service");
+let SensorReadingsService = class SensorReadingsService {
+    constructor(readingRepository, devicesService, verificationService, userPlantSelectionsService, notificationsService, configService) {
+        this.readingRepository = readingRepository;
+        this.devicesService = devicesService;
+        this.verificationService = verificationService;
+        this.userPlantSelectionsService = userPlantSelectionsService;
+        this.notificationsService = notificationsService;
+        this.configService = configService;
+        this.suddenChangeThresholds = {
+            temperature: this.configService.get('sensor.suddenChange.temperature'),
+            moisture: this.configService.get('sensor.suddenChange.moisture'),
+            light: this.configService.get('sensor.suddenChange.light'),
+        };
+    }
+    async createReading(deviceId, createReadingDto) {
+        const device = await this.devicesService.findDeviceByDeviceId(deviceId);
+        const calibratedData = this.applyCalibration(createReadingDto, device.calibration);
+        const reading = this.readingRepository.create({
+            deviceId: device.id,
+            temperature: calibratedData.temperature,
+            moisture: calibratedData.moisture,
+            light: calibratedData.light,
+            humidity: calibratedData.humidity,
+            timestamp: createReadingDto.timestamp ? new Date(createReadingDto.timestamp) : new Date(),
+            verified: true,
+        });
+        const savedReading = await this.readingRepository.save(reading);
+        await this.devicesService.updateLastSeen(deviceId);
+        await this.checkPlantThresholds(device.id, device.userId, savedReading);
+        await this.checkSuddenChanges(device.id, savedReading);
+        return savedReading;
+    }
+    async getDeviceReadings(deviceId, queryDto) {
+        const { startDate, endDate, limit = 100 } = queryDto;
+        const query = this.readingRepository
+            .createQueryBuilder('reading')
+            .where('reading.deviceId = :deviceId', { deviceId })
+            .orderBy('reading.timestamp', 'DESC')
+            .limit(limit);
+        if (startDate) {
+            query.andWhere('reading.timestamp >= :startDate', {
+                startDate: new Date(startDate),
+            });
+        }
+        if (endDate) {
+            query.andWhere('reading.timestamp <= :endDate', {
+                endDate: new Date(endDate),
+            });
+        }
+        return query.getMany();
+    }
+    async getLatestReading(deviceId) {
+        return this.readingRepository.findOne({
+            where: { deviceId },
+            order: { timestamp: 'DESC' },
+        });
+    }
+    async getAverageReadings(deviceId, startDate, endDate) {
+        const result = await this.readingRepository
+            .createQueryBuilder('reading')
+            .select('AVG(reading.temperature)', 'avgTemperature')
+            .addSelect('AVG(reading.moisture)', 'avgMoisture')
+            .addSelect('AVG(reading.light)', 'avgLight')
+            .addSelect('AVG(reading.humidity)', 'avgHumidity')
+            .where('reading.deviceId = :deviceId', { deviceId })
+            .andWhere('reading.timestamp BETWEEN :startDate AND :endDate', {
+            startDate,
+            endDate,
+        })
+            .getRawOne();
+        return {
+            avgTemperature: parseFloat(result.avgTemperature) || 0,
+            avgMoisture: parseFloat(result.avgMoisture) || 0,
+            avgLight: parseFloat(result.avgLight) || 0,
+            avgHumidity: parseFloat(result.avgHumidity) || 0,
+        };
+    }
+    async getDailyStats(deviceId, date) {
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+        const result = await this.readingRepository
+            .createQueryBuilder('reading')
+            .select('MIN(reading.temperature)', 'minTemperature')
+            .addSelect('MAX(reading.temperature)', 'maxTemperature')
+            .addSelect('AVG(reading.temperature)', 'avgTemperature')
+            .addSelect('MIN(reading.moisture)', 'minMoisture')
+            .addSelect('MAX(reading.moisture)', 'maxMoisture')
+            .addSelect('AVG(reading.moisture)', 'avgMoisture')
+            .addSelect('MIN(reading.light)', 'minLight')
+            .addSelect('MAX(reading.light)', 'maxLight')
+            .addSelect('AVG(reading.light)', 'avgLight')
+            .where('reading.deviceId = :deviceId', { deviceId })
+            .andWhere('reading.timestamp BETWEEN :startOfDay AND :endOfDay', {
+            startOfDay,
+            endOfDay,
+        })
+            .getRawOne();
+        return {
+            minTemperature: parseFloat(result.minTemperature) || 0,
+            maxTemperature: parseFloat(result.maxTemperature) || 0,
+            avgTemperature: parseFloat(result.avgTemperature) || 0,
+            minMoisture: parseFloat(result.minMoisture) || 0,
+            maxMoisture: parseFloat(result.maxMoisture) || 0,
+            avgMoisture: parseFloat(result.avgMoisture) || 0,
+            minLight: parseFloat(result.minLight) || 0,
+            maxLight: parseFloat(result.maxLight) || 0,
+            avgLight: parseFloat(result.avgLight) || 0,
+        };
+    }
+    applyCalibration(data, calibration) {
+        if (!calibration)
+            return data;
+        return {
+            ...data,
+            temperature: data.temperature + (calibration.temperatureOffset || 0),
+            moisture: data.moisture + (calibration.moistureOffset || 0),
+            light: data.light + (calibration.lightOffset || 0),
+        };
+    }
+    async checkSuddenChanges(deviceId, currentReading) {
+        const suddenChange = [];
+        const previousReading = await this.readingRepository.findOne({
+            where: { deviceId },
+            order: { timestamp: 'DESC' },
+        });
+        if (!previousReading) {
+            return;
+        }
+        const tempChange = Math.abs(currentReading.temperature - previousReading.temperature);
+        if (tempChange >= this.suddenChangeThresholds.temperature) {
+            await this.verificationService.createVerification(deviceId, currentReading.id, 'temperature_change', tempChange);
+        }
+        const moistureChange = Math.abs(currentReading.moisture - previousReading.moisture);
+        if (moistureChange >= this.suddenChangeThresholds.moisture) {
+            await this.verificationService.createVerification(deviceId, currentReading.id, 'moisture_change', moistureChange);
+        }
+        const lightChange = Math.abs(currentReading.light - previousReading.light);
+        if (lightChange >= this.suddenChangeThresholds.light) {
+            await this.verificationService.createVerification(deviceId, currentReading.id, 'light_change', lightChange);
+        }
+    }
+    async checkPlantThresholds(deviceId, userId, reading) {
+        console.log('checkPlantThresholds :', { deviceId, userId, reading });
+        const issues = [];
+        const currentPlant = await this.userPlantSelectionsService.getCurrentlyMonitored(userId, deviceId);
+        console.log('currentPlant :', currentPlant);
+        if (!currentPlant) {
+            return;
+        }
+        const thresholds = currentPlant.package
+            ? currentPlant.package.thresholds
+            : currentPlant.plantSpecies.thresholds;
+        console.log('thresholds :', thresholds);
+        console.log('reading :', reading);
+        console.log('reading cond:', reading.temperature > thresholds.temperature.max);
+        if (reading.temperature < thresholds.temperature.min) {
+            issues.push(`🥶 temperature is ${reading.temperature}that not suit .its should be atLeast(${thresholds.temperature.min})..Please take necessary actions to warm your plant's environment. `);
+        }
+        else if (reading.temperature > thresholds.temperature.max) {
+            issues.push(` temperature is ${reading.temperature}that not suit .its should be at most(${thresholds.temperature.max}).Please take necessary actions to cool down your plant's environment.`);
+            console.log(issues);
+            issues.push(`Please take necessary actions to cool down your plant's environment.`);
+        }
+        if (reading.moisture < thresholds.moisture.min) {
+            issues.push(`💦 moisture is ${reading.moisture}that not suit .its should be atLeast(${thresholds.moisture.min})`);
+        }
+        else if (reading.moisture > thresholds.moisture.max) {
+            issues.push(`💦 moisture is ${reading.moisture}that not suit .its should be at Most(${thresholds.moisture.max})`);
+        }
+        if (reading.light > thresholds.light.max) {
+            issues.push(`☀️ light is ${reading.light}that not suit .its should be at most(${thresholds.light.max})`);
+        }
+        if (issues.length > 0) {
+            await this.notificationsService.sendThresholdAlert(currentPlant.user.email, currentPlant.user.fullName, issues);
+        }
+    }
+};
+exports.SensorReadingsService = SensorReadingsService;
+exports.SensorReadingsService = SensorReadingsService = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, typeorm_1.InjectRepository)(sensor_reading_entity_1.SensorReading)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        devices_service_1.DevicesService,
+        sensor_verification_service_1.SensorVerificationService,
+        user_plant_selections_service_1.UserPlantSelectionsService,
+        notifications_service_1.NotificationsService,
+        config_1.ConfigService])
+], SensorReadingsService);
+//# sourceMappingURL=sensor-readings.service.js.map

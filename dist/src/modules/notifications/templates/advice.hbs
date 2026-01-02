@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background-color: #17a2b8; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; }
+    .advice-item { background-color: #e7f3ff; padding: 15px; margin: 10px 0; border-left: 4px solid #17a2b8; }
+    .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💡 Plant Care Advice</h1>
+    </div>
+    <div class="content">
+      <h2>{{plantName}} Care Recommendations</h2>
+      <p><strong>Health Score:</strong> {{healthScore}}/100</p>
+      <p><strong>Status:</strong> {{healthStatus}}</p>
+      {{#each adviceItems}}
+      <div class="advice-item">
+        <strong>{{this.priority}}:</strong> {{this.message}}
+        <br><small>{{this.reason}}</small>
+      </div>
+      {{/each}}
+      <p><a href="{{appUrl}}/advice/{{selectionId}}" style="background-color: #17a2b8; color: white; padding: 10px 20px; text-decoration: none; display: inline-block; margin-top: 10px;">View Full Details</a></p>
+    </div>
+    <div class="footer">
+      <p>Plant Monitoring System</p>
+    </div>
+  </div>
+</body>
+</html>
