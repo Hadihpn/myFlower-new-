@@ -5,8 +5,8 @@
   "compilerOptions": {
       "assets": [
       {
-        "include": "**/*.hbs",
-        "outDir": "dist"
+        "include": "**/**/*.hbs",
+        "outDir": "dist/src"
       }
     ],
     "deleteOutDir": true,
