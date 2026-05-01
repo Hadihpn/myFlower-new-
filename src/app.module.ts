@@ -26,6 +26,7 @@ import { DailySummaryModule } from './modules/daily-summary/daily-summary.module
 // Guards
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -34,7 +35,12 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
       isGlobal: true,
       load: [configuration],
     }),
-
+    //Rate-Limit
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 300, // 5 دقیقه (به ثانیه)
+      max: 1000, // حداکثر 1000 آیتم در cache
+    }),
     // Database
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -55,10 +61,12 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     // Rate limiting
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ([{
-        ttl: configService.get('throttle.ttl'),
-        limit: configService.get('throttle.limit'),
-      }]),
+      useFactory: (configService: ConfigService) => [
+        {
+          ttl: configService.get('throttle.ttl'),
+          limit: configService.get('throttle.limit'),
+        },
+      ],
       inject: [ConfigService],
     }),
 
@@ -92,4 +100,3 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
   ],
 })
 export class AppModule {}
-

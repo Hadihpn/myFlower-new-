@@ -7,6 +7,9 @@ import { DeviceAuthGuard } from '@common/guards/device-auth.guard';
 import { CurrentDevice } from '@common/decorators/device-auth.decorator';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { Public } from '@common/decorators/public.decorator';
+import { DeviceRateLimitGuard } from '@/common/guards/DeviceRateLimitGuard.guard';
+import { UserRateLimitGuard } from '@/common/guards/UserRateLimitGuard.guard';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 @ApiTags('Sensor Readings')
 @Controller('sensor-readings')
@@ -15,7 +18,7 @@ export class SensorReadingsController {
 
   @Post()
   @Public()
-  @UseGuards(DeviceAuthGuard)
+  @UseGuards(DeviceAuthGuard,DeviceRateLimitGuard)
   @ApiSecurity('DeviceId')
   @ApiSecurity('DeviceToken')
   @ApiOperation({ summary: 'Submit sensor reading (Device Auth)' })
@@ -27,8 +30,9 @@ export class SensorReadingsController {
   ) {
     return this.sensorReadingsService.createReading(deviceId, createReadingDto);
   }
-
+  
   @Get('device/:deviceId')
+  @UseGuards(UserRateLimitGuard)
   @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Get device sensor readings' })
   @ApiResponse({ status: 200, description: 'List of sensor readings' })
@@ -38,7 +42,8 @@ export class SensorReadingsController {
   ) {
     return this.sensorReadingsService.getDeviceReadings(deviceId, queryDto);
   }
-
+  
+  @UseGuards(UserRateLimitGuard)
   @Get('device/:deviceId/latest')
   // @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Get latest sensor reading' })
