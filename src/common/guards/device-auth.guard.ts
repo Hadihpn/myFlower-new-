@@ -2,7 +2,8 @@ import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Device } from '@modules/devices/entities/device.entity';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
+import { HashUtil } from '../utils/hash.util';
 
 @Injectable()
 export class DeviceAuthGuard implements CanActivate {
@@ -22,6 +23,8 @@ export class DeviceAuthGuard implements CanActivate {
     if (!deviceId || !deviceToken) {
       throw new UnauthorizedException('Device credentials required');
     }
+    const hashedToken = await HashUtil.hash(deviceToken);
+    console.log("hashedToken",hashedToken)
     const device = await this.deviceRepository
       .createQueryBuilder('device')
       .addSelect('device.tokenHash') // 👈 explicitly include password
@@ -32,12 +35,16 @@ export class DeviceAuthGuard implements CanActivate {
     //   where: { deviceId },
     //   relations: ['user'],
     // });
-    console.log('device', device);
 
     if (!device) {
       throw new UnauthorizedException('Device not found');
     }
+    console.log('deviceToken', deviceToken);
+    console.log('hashedToken');
 
+    console.log('hashedToken', hashedToken);
+    console.log('device.tokenHah', device.tokenHash);
+    console.log('deviceT', device);
     const isValidToken = await bcrypt.compare(deviceToken, device.tokenHash);
 
     if (!isValidToken) {

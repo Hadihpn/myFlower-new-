@@ -14,13 +14,14 @@ const daily_summary_service_1 = require("./daily-summary.service");
 const daily_summary_controller_1 = require("./daily-summary.controller");
 const daily_summary_entity_1 = require("./entities/daily-summary.entity");
 const sensor_readings_module_1 = require("../sensor-readings/sensor-readings.module");
+const sensor_reading_entity_1 = require("../sensor-readings/entities/sensor-reading.entity");
 let DailySummaryModule = class DailySummaryModule {
 };
 exports.DailySummaryModule = DailySummaryModule;
 exports.DailySummaryModule = DailySummaryModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([daily_summary_entity_1.DailySummary]),
+            typeorm_1.TypeOrmModule.forFeature([daily_summary_entity_1.DailySummary, sensor_reading_entity_1.SensorReading]),
             schedule_1.ScheduleModule.forRoot(),
             sensor_readings_module_1.SensorReadingsModule,
         ],

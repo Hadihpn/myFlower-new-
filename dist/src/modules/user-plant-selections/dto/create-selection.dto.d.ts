@@ -1,5 +1,5 @@
 export declare class CreateSelectionDto {
-    deviceId: number;
+    deviceId: string;
     packageId?: number;
     plantSpeciesId?: number;
     nickname: string;

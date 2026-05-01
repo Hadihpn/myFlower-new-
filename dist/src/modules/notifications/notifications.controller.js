@@ -14,61 +14,51 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationsController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const notifications_service_1 = require("./notifications.service");
-const create_notification_dto_1 = require("./dto/create-notification.dto");
-const update_notification_dto_1 = require("./dto/update-notification.dto");
+const update_notification_settings_dto_1 = require("./dto/update-notification-settings.dto");
+const notification_settings_response_dto_1 = require("./dto/notification-settings-response.dto");
+const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 let NotificationsController = class NotificationsController {
     constructor(notificationsService) {
         this.notificationsService = notificationsService;
     }
-    create(createNotificationDto) {
+    async getSettings(req) {
+        const userId = req.user.id;
+        return this.notificationsService.getSettings(userId);
     }
-    findAll() {
-    }
-    findOne(id) {
-    }
-    update(id, updateNotificationDto) {
-    }
-    remove(id) {
+    async updateSettings(req, dto) {
+        const userId = req.user.id;
+        return this.notificationsService.updateSettings(userId, dto);
     }
 };
 exports.NotificationsController = NotificationsController;
 __decorate([
-    (0, common_1.Post)(),
-    __param(0, (0, common_1.Body)()),
+    (0, common_1.Get)('settings'),
+    (0, swagger_1.ApiResponse)({ status: 200, type: notification_settings_response_dto_1.NotificationSettingsResponseDto }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get user notification settings' }),
+    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_notification_dto_1.CreateNotificationDto]),
-    __metadata("design:returntype", void 0)
-], NotificationsController.prototype, "create", null);
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], NotificationsController.prototype, "getSettings", null);
 __decorate([
-    (0, common_1.Get)(),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", void 0)
-], NotificationsController.prototype, "findAll", null);
-__decorate([
-    (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], NotificationsController.prototype, "findOne", null);
-__decorate([
-    (0, common_1.Patch)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Patch)('settings'),
+    (0, swagger_1.ApiResponse)({ status: 200, type: notification_settings_response_dto_1.NotificationSettingsResponseDto }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Bad request' }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Unauthorized' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Update user notification settings' }),
+    __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, update_notification_dto_1.UpdateNotificationDto]),
-    __metadata("design:returntype", void 0)
-], NotificationsController.prototype, "update", null);
-__decorate([
-    (0, common_1.Delete)(':id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], NotificationsController.prototype, "remove", null);
+    __metadata("design:paramtypes", [Object, update_notification_settings_dto_1.UpdateNotificationSettingsDto]),
+    __metadata("design:returntype", Promise)
+], NotificationsController.prototype, "updateSettings", null);
 exports.NotificationsController = NotificationsController = __decorate([
+    (0, swagger_1.ApiTags)('notifications'),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('notifications'),
     __metadata("design:paramtypes", [notifications_service_1.NotificationsService])
 ], NotificationsController);

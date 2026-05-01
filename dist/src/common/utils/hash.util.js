@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HashUtil = void 0;
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 class HashUtil {
     static async hash(plainText) {
         return bcrypt.hash(plainText, this.SALT_ROUNDS);

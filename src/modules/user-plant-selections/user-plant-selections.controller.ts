@@ -36,6 +36,8 @@ export class UserPlantSelectionsController {
     @CurrentUser('id') userId: number,
     @Body() createSelectionDto: CreateSelectionDto,
   ) {
+    console.log("deviceID :",createSelectionDto.deviceId);
+    
     return this.selectionsService.createSelection(userId, createSelectionDto);
   }
 
@@ -51,8 +53,9 @@ export class UserPlantSelectionsController {
   @ApiResponse({ status: 200, description: 'List of device selections' })
   getDeviceSelections(
     @CurrentUser('id') userId: number,
-    @Param('deviceId', ParseIntPipe) deviceId: number,
+    @Param('deviceId') deviceId: string,
   ) {
+    
     return this.selectionsService.getDeviceSelections(userId, deviceId);
   }
 
@@ -61,7 +64,7 @@ export class UserPlantSelectionsController {
   @ApiResponse({ status: 200, description: 'Currently monitored selection' })
   getCurrentlyMonitored(
     @CurrentUser('id') userId: number,
-    @Param('deviceId', ParseIntPipe) deviceId: number,
+    @Param('deviceId', ParseIntPipe) deviceId: string,
   ) {
     return this.selectionsService.getCurrentlyMonitored(userId, deviceId);
   }
@@ -71,7 +74,7 @@ export class UserPlantSelectionsController {
   @ApiResponse({ status: 200, description: 'Monitoring switched successfully' })
   switchMonitoring(
     @CurrentUser('id') userId: number,
-    @Param('deviceId', ParseIntPipe) deviceId: number,
+    @Param('deviceId', ParseIntPipe) deviceId: string,
     @Body() switchDto: SwitchMonitoringDto,
   ) {
     return this.selectionsService.switchMonitoring(

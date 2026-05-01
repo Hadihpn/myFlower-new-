@@ -36,6 +36,7 @@ let UserPlantSelectionsService = class UserPlantSelectionsService {
         if (device.userId !== userId) {
             throw new common_1.BadRequestException('Device does not belong to user');
         }
+        console.log("first step", device);
         const plantSlotLimit = await this.subscriptionService.checkUserPlantSlotLimit(userId);
         if (plantSlotLimit === 0) {
             throw new common_1.BadRequestException('No active subscription found');
@@ -45,10 +46,13 @@ let UserPlantSelectionsService = class UserPlantSelectionsService {
         });
         let alreadyMonitoring;
         if (packageId) {
+            console.log("device :", device);
             await this.plantsService.findPackageById(packageId);
+            console.log("before alreadyMonitoring :", { userId, device, packageId });
             alreadyMonitoring = await this.selectionRepository.findOne({
-                where: { userId, deviceId, packageId },
+                where: { userId, deviceId: device.deviceId, packageId },
             });
+            console.log("alreadyMonitoring :", alreadyMonitoring);
         }
         else {
             await this.plantsService.findSpeciesById(plantSpeciesId);
@@ -77,6 +81,7 @@ let UserPlantSelectionsService = class UserPlantSelectionsService {
             currentlyMonitoring: true,
             plantedDate: selectionData.plantedDate ? new Date(selectionData.plantedDate) : null,
         });
+        console.log("selection :", selection);
         return this.selectionRepository.save(selection);
     }
     async getUserSelections(userId) {

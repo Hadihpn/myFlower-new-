@@ -28,7 +28,6 @@ export class UserPlantSelectionsService {
     createSelectionDto: CreateSelectionDto,
   ): Promise<UserPlantSelection> {
     const { deviceId, packageId, plantSpeciesId, ...selectionData } = createSelectionDto;
-
     // Validate package XOR species
     if ((packageId && plantSpeciesId) || (!packageId && !plantSpeciesId)) {
       throw new BadRequestException('Must select either a package OR a species, not both');
@@ -38,28 +37,33 @@ export class UserPlantSelectionsService {
     if (device.userId !== userId) {
       throw new BadRequestException('Device does not belong to user');
     }
+    console.log("first step",device)
     // Check subscription slot limit
     const plantSlotLimit = await this.subscriptionService.checkUserPlantSlotLimit(userId);
-
+    
     if (plantSlotLimit === 0) {
       throw new BadRequestException('No active subscription found');
     }
-
+    
     const activeSelections = await this.selectionRepository.count({
       where: { userId, active: true },
     });
     let alreadyMonitoring: UserPlantSelection | null;
     // Verify plant/package exists
     if (packageId) {
+      console.log("device :", device)
       await this.plantsService.findPackageById(packageId);
+
+      console.log("before alreadyMonitoring :", {userId, device, packageId})
       alreadyMonitoring = await this.selectionRepository.findOne({
-         where: { userId, deviceId, packageId },
-       });
+        where: { userId, deviceId:device.deviceId, packageId },
+      });
+      console.log("alreadyMonitoring :", alreadyMonitoring)
     } else {
       await this.plantsService.findSpeciesById(plantSpeciesId);
-       alreadyMonitoring = await this.selectionRepository.findOne({
-         where: { userId, deviceId, plantSpeciesId },
-       });
+      alreadyMonitoring = await this.selectionRepository.findOne({
+        where: { userId, deviceId, plantSpeciesId },
+      });
     }
     if (alreadyMonitoring ) {
       if(alreadyMonitoring.currentlyMonitoring){
@@ -72,8 +76,8 @@ export class UserPlantSelectionsService {
     if (activeSelections >= plantSlotLimit) {
       throw new BadRequestException(`Plant slot limit reached (${plantSlotLimit} slots)`);
     }
-
-
+    
+    
     // Create selection
     const selection = this.selectionRepository.create({
       userId,
@@ -84,6 +88,7 @@ export class UserPlantSelectionsService {
       currentlyMonitoring:true,
       plantedDate: selectionData.plantedDate ? new Date(selectionData.plantedDate) : null,
     });
+    console.log("selection :", selection)
 
     return this.selectionRepository.save(selection);
   }
@@ -102,7 +107,7 @@ export class UserPlantSelectionsService {
     });
   }
 
-  async getDeviceSelections(userId: number, deviceId: number): Promise<UserPlantSelection[]> {
+  async getDeviceSelections(userId: number, deviceId: string): Promise<UserPlantSelection[]> {
     const device = await this.devicesService.findDeviceById(deviceId);
     if (device.userId !== userId) {
       throw new BadRequestException('Device does not belong to user');
@@ -117,7 +122,7 @@ export class UserPlantSelectionsService {
 
   async getCurrentlyMonitored(
     userId: number,
-    deviceId: number,
+    deviceId: string,
   ): Promise<UserPlantSelection | null> {
     console.log('Getting currently monitored plant for device:', { userId, deviceId });
     const device = await this.devicesService.findDeviceById(deviceId);
@@ -138,7 +143,7 @@ export class UserPlantSelectionsService {
 
   async switchMonitoring(
     userId: number,
-    deviceId: number,
+    deviceId: string,
     selectionId: number,
   ): Promise<UserPlantSelection> {
     const device = await this.devicesService.findDeviceById(deviceId);

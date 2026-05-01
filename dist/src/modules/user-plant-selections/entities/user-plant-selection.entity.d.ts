@@ -6,7 +6,7 @@ import { UserAction } from '@modules/user-actions/entities/user-action.entity';
 export declare class UserPlantSelection {
     id: number;
     userId: number;
-    deviceId: number;
+    deviceId: string;
     packageId: number;
     plantSpeciesId: number;
     nickname: string;

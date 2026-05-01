@@ -145,7 +145,7 @@ await this.notificationsService.sendWelcomeEmail(user.email, user.fullName);
     return null;
   }
 
-  private generateTokens(user: User): AuthResponse {
+  private   generateTokens(user: User): AuthResponse {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,

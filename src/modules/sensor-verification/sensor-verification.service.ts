@@ -95,7 +95,7 @@ export class SensorVerificationService {
     // Send notification if confirmed as real change
     if (verification.confirmed) {
       await this.notificationsService.sendSuddenChangeAlert(
-        verification.deviceId,
+        verification.deviceId.toString(),
         verification.changeType,
         verification.changeMagnitude,
       );

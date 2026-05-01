@@ -21,7 +21,8 @@ class CreateUserPlantSelectionsTable1700000000012 {
                 },
                 {
                     name: 'device_id',
-                    type: 'int',
+                    type: 'varchar',
+                    length: '255',
                     isNullable: false,
                 },
                 {
@@ -60,75 +61,83 @@ class CreateUserPlantSelectionsTable1700000000012 {
                     name: 'active',
                     type: 'boolean',
                     default: true,
+                    isNullable: false,
                 },
                 {
                     name: 'currently_monitoring',
                     type: 'boolean',
                     default: false,
+                    isNullable: false,
                 },
                 {
                     name: 'created_at',
                     type: 'timestamp',
                     default: 'CURRENT_TIMESTAMP',
+                    isNullable: false,
                 },
                 {
                     name: 'updated_at',
                     type: 'timestamp',
                     default: 'CURRENT_TIMESTAMP',
                     onUpdate: 'CURRENT_TIMESTAMP',
+                    isNullable: false,
                 },
             ],
         }), true);
-        await queryRunner.query(`ALTER TABLE user_plant_selections ADD CONSTRAINT CHK_PACKAGE_OR_SPECIES 
-       CHECK ((package_id IS NOT NULL AND plant_species_id IS NULL) OR 
-              (package_id IS NULL AND plant_species_id IS NOT NULL))`);
+        await queryRunner.createCheckConstraint('user_plant_selections', new typeorm_1.TableCheck({
+            name: 'CHK_USER_PLANT_SELECTIONS_PACKAGE_OR_SPECIES',
+            expression: `(package_id IS NOT NULL AND plant_species_id IS NULL) OR (package_id IS NULL AND plant_species_id IS NOT NULL)`,
+        }));
         await queryRunner.createForeignKey('user_plant_selections', new typeorm_1.TableForeignKey({
             columnNames: ['user_id'],
-            referencedColumnNames: ['id'],
             referencedTableName: 'users',
+            referencedColumnNames: ['id'],
             onDelete: 'CASCADE',
+            name: 'FK_USER_PLANT_SELECTIONS_USER',
         }));
         await queryRunner.createForeignKey('user_plant_selections', new typeorm_1.TableForeignKey({
             columnNames: ['device_id'],
-            referencedColumnNames: ['id'],
             referencedTableName: 'devices',
+            referencedColumnNames: ['device_id'],
             onDelete: 'CASCADE',
+            name: 'FK_USER_PLANT_SELECTIONS_DEVICE',
         }));
         await queryRunner.createForeignKey('user_plant_selections', new typeorm_1.TableForeignKey({
             columnNames: ['package_id'],
-            referencedColumnNames: ['id'],
             referencedTableName: 'plant_packages',
-            onDelete: 'CASCADE',
+            referencedColumnNames: ['id'],
+            onDelete: 'RESTRICT',
+            name: 'FK_USER_PLANT_SELECTIONS_PACKAGE',
         }));
         await queryRunner.createForeignKey('user_plant_selections', new typeorm_1.TableForeignKey({
             columnNames: ['plant_species_id'],
-            referencedColumnNames: ['id'],
             referencedTableName: 'plant_species',
-            onDelete: 'CASCADE',
+            referencedColumnNames: ['id'],
+            onDelete: 'RESTRICT',
+            name: 'FK_USER_PLANT_SELECTIONS_SPECIES',
         }));
         await queryRunner.createIndex('user_plant_selections', new typeorm_1.TableIndex({
-            name: 'IDX_USER_PLANT_SELECTIONS_USER_ID',
-            columnNames: ['user_id'],
+            name: 'IDX_USER_PLANT_SELECTIONS_USER_ACTIVE',
+            columnNames: ['user_id', 'active'],
         }));
         await queryRunner.createIndex('user_plant_selections', new typeorm_1.TableIndex({
-            name: 'IDX_USER_PLANT_SELECTIONS_DEVICE_ID',
+            name: 'IDX_USER_PLANT_SELECTIONS_DEVICE',
             columnNames: ['device_id'],
         }));
         await queryRunner.createIndex('user_plant_selections', new typeorm_1.TableIndex({
-            name: 'IDX_USER_PLANT_SELECTIONS_MONITORING',
-            columnNames: ['device_id', 'currently_monitoring'],
+            name: 'IDX_USER_PLANT_SELECTIONS_SPECIES',
+            columnNames: ['plant_species_id'],
         }));
     }
     async down(queryRunner) {
-        await queryRunner.dropIndex('user_plant_selections', 'IDX_USER_PLANT_SELECTIONS_MONITORING');
-        await queryRunner.dropIndex('user_plant_selections', 'IDX_USER_PLANT_SELECTIONS_DEVICE_ID');
-        await queryRunner.dropIndex('user_plant_selections', 'IDX_USER_PLANT_SELECTIONS_USER_ID');
-        const table = await queryRunner.getTable('user_plant_selections');
-        const foreignKeys = table.foreignKeys;
-        for (const foreignKey of foreignKeys) {
-            await queryRunner.dropForeignKey('user_plant_selections', foreignKey);
-        }
-        await queryRunner.query('ALTER TABLE user_plant_selections DROP CONSTRAINT CHK_PACKAGE_OR_SPECIES');
+        await queryRunner.dropIndex('user_plant_selections', 'IDX_USER_PLANT_SELECTIONS_SPECIES');
+        await queryRunner.dropIndex('user_plant_selections', 'IDX_USER_PLANT_SELECTIONS_DEVICE');
+        await queryRunner.dropIndex('user_plant_selections', 'IDX_USER_PLANT_SELECTIONS_USER_ACTIVE');
+        await queryRunner.dropForeignKey('user_plant_selections', 'FK_USER_PLANT_SELECTIONS_SPECIES');
+        await queryRunner.dropForeignKey('user_plant_selections', 'FK_USER_PLANT_SELECTIONS_PACKAGE');
+        await queryRunner.dropForeignKey('user_plant_selections', 'FK_USER_PLANT_SELECTIONS_DEVICE');
+        await queryRunner.dropForeignKey('user_plant_selections', 'FK_USER_PLANT_SELECTIONS_USER');
+        await queryRunner.dropCheckConstraint('user_plant_selections', 'CHK_USER_PLANT_SELECTIONS_PACKAGE_OR_SPECIES');
         await queryRunner.dropTable('user_plant_selections');
     }
 }

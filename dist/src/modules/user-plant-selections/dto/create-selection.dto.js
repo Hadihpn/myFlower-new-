@@ -17,9 +17,8 @@ class CreateSelectionDto {
 exports.CreateSelectionDto = CreateSelectionDto;
 __decorate([
     (0, swagger_1.ApiProperty)({ example: 1 }),
-    (0, class_validator_1.IsInt)(),
     (0, class_validator_1.IsNotEmpty)(),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], CreateSelectionDto.prototype, "deviceId", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: 1, description: 'Plant package ID (mutually exclusive with plantSpeciesId)' }),

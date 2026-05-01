@@ -17,7 +17,8 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const device_entity_1 = require("../../modules/devices/entities/device.entity");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
+const hash_util_1 = require("../utils/hash.util");
 let DeviceAuthGuard = class DeviceAuthGuard {
     constructor(deviceRepository) {
         this.deviceRepository = deviceRepository;
@@ -31,16 +32,22 @@ let DeviceAuthGuard = class DeviceAuthGuard {
         if (!deviceId || !deviceToken) {
             throw new common_1.UnauthorizedException('Device credentials required');
         }
+        const hashedToken = await hash_util_1.HashUtil.hash(deviceToken);
+        console.log("hashedToken", hashedToken);
         const device = await this.deviceRepository
             .createQueryBuilder('device')
             .addSelect('device.tokenHash')
             .where('device.deviceId = :deviceId', { deviceId })
             .leftJoinAndSelect('device.user', 'user')
             .getOne();
-        console.log('device', device);
         if (!device) {
             throw new common_1.UnauthorizedException('Device not found');
         }
+        console.log('deviceToken', deviceToken);
+        console.log('hashedToken');
+        console.log('hashedToken', hashedToken);
+        console.log('device.tokenHah', device.tokenHash);
+        console.log('deviceT', device);
         const isValidToken = await bcrypt.compare(deviceToken, device.tokenHash);
         if (!isValidToken) {
             throw new common_1.UnauthorizedException('Invalid device token');

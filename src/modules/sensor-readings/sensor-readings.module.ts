@@ -1,27 +1,27 @@
-import { Module, forwardRef } from '@nestjs/common';
+// sensor-readings.module.ts
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SensorReadingsService } from './sensor-readings.service';
 import { SensorReadingsController } from './sensor-readings.controller';
 import { SensorReading } from './entities/sensor-reading.entity';
+import { DeviceSensorStats } from './entities/device-sensor-stats.entity';
 import { DevicesModule } from '@modules/devices/devices.module';
 import { SensorVerificationModule } from '@modules/sensor-verification/sensor-verification.module';
-import { SubscriptionModule } from '@modules/subscription/subscription.module';
-import { PlantsModule } from '@modules/plants/plants.module';
-import { Device } from '../devices/entities/device.entity';
-import { NotificationsService } from '../notifications/notifications.service';
-import { UserPlantSelectionsService } from '../user-plant-selections/user-plant-selections.service';
-import { UserPlantSelection } from '../user-plant-selections/entities/user-plant-selection.entity';
+import { UserPlantSelectionsModule } from '@modules/user-plant-selections/user-plant-selections.module';
+import { NotificationsModule } from '@modules/notifications/notifications.module';
+import { Device } from '@modules/devices/entities/device.entity';
+import { DeviceAuthGuard } from '@common/guards/device-auth.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SensorReading,Device,UserPlantSelection]),
+    TypeOrmModule.forFeature([SensorReading, DeviceSensorStats, Device]), // Device اضافه شد
     DevicesModule,
-    forwardRef(() => SensorVerificationModule),
-    SubscriptionModule,
-    PlantsModule,
+    SensorVerificationModule,
+    UserPlantSelectionsModule,
+    NotificationsModule,
   ],
   controllers: [SensorReadingsController],
-  providers: [SensorReadingsService,NotificationsService,UserPlantSelectionsService],
+  providers: [SensorReadingsService, DeviceAuthGuard], // Guard اضافه شد
   exports: [SensorReadingsService],
 })
 export class SensorReadingsModule {}

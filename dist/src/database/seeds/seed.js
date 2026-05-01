@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const typeorm_1 = require("typeorm");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const ormconfig_1 = require("../../../ormconfig");
 async function seed() {
     const dataSource = new typeorm_1.DataSource(ormconfig_1.default.options);

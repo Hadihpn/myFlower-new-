@@ -8,31 +8,70 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationsService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
 const handlebars = require("handlebars");
+const notification_settings_entity_1 = require("./entities/notification-settings.entity");
+const devices_service_1 = require("../devices/devices.service");
 let NotificationsService = class NotificationsService {
-    constructor(configService) {
+    constructor(configService, devicesService, settingsRepository) {
         this.configService = configService;
+        this.devicesService = devicesService;
+        this.settingsRepository = settingsRepository;
         this.transporter = nodemailer.createTransport({
-            host: 'smtp.c1.liara.email',
-            port: 587,
-            secure: false,
+            host: this.configService.get('email.host'),
+            port: this.configService.get('email.port'),
+            secure: this.configService.get('email.secure', false),
             auth: {
-                user: 'adoring_mccarthy_9fga3o',
-                pass: '88e41d01-468e-4f95-a6a9-e8a50400a93e',
+                user: this.configService.get('email.user'),
+                pass: this.configService.get('email.pass'),
             },
         });
     }
+    async getSettings(userId) {
+        let settings = await this.settingsRepository.findOne({
+            where: { userId },
+        });
+        if (!settings) {
+            settings = this.settingsRepository.create({
+                userId,
+                emailEnabled: true,
+                suddenChangeAlerts: true,
+                thresholdAlerts: true,
+                welcomeEmails: true,
+            });
+            await this.settingsRepository.save(settings);
+        }
+        return settings;
+    }
+    async updateSettings(userId, updateDto) {
+        let settings = await this.settingsRepository.findOne({
+            where: { userId },
+        });
+        if (!settings) {
+            settings = this.settingsRepository.create({
+                userId,
+                ...updateDto,
+            });
+        }
+        else {
+            Object.assign(settings, updateDto);
+        }
+        return await this.settingsRepository.save(settings);
+    }
     async sendEmail(to, subject, html) {
         try {
-            console.log("sendemail");
-            console.log(to, subject, html);
+            console.log('sendemail', { to, subject, html });
             await this.transporter.sendMail({
                 from: this.configService.get('email.from'),
                 to,
@@ -46,6 +85,17 @@ let NotificationsService = class NotificationsService {
         }
     }
     async sendSuddenChangeAlert(deviceId, changeType, magnitude) {
+        const device = await this.devicesService.findDeviceByDeviceId(deviceId);
+        if (!device) {
+            throw new common_1.NotFoundException(`Device ${deviceId} not found`);
+        }
+        const settings = await this.settingsRepository.findOne({
+            where: { userId: device.user.id },
+            relations: ['user'],
+        });
+        if (!settings || !settings.emailEnabled || !settings.suddenChangeAlerts) {
+            return;
+        }
         const html = `
       <h2>⚠️ Sudden Environmental Change Detected</h2>
       <p>Device ID: ${deviceId}</p>
@@ -53,7 +103,29 @@ let NotificationsService = class NotificationsService {
       <p>Magnitude: ${magnitude}</p>
       <p>Please check your plants immediately!</p>
     `;
-        await this.sendEmail('user@example.com', 'Plant Alert: Sudden Change Detected', html);
+        await this.sendEmail(settings.user.email, 'Plant Alert: Sudden Change Detected', html);
+    }
+    async sendSensorAnomalyNotification(deviceId, messages) {
+        const device = await this.devicesService.findDeviceByDeviceId(deviceId);
+        if (!device) {
+            throw new common_1.NotFoundException(`Device ${deviceId} not found`);
+        }
+        const settings = await this.settingsRepository.findOne({
+            where: { userId: device.user.id },
+            relations: ['user'],
+        });
+        if (!settings || !settings.emailEnabled || !settings.thresholdAlerts) {
+            return;
+        }
+        const messageList = messages.map((msg) => `<li>${msg}</li>`).join('');
+        const html = `
+      <h2>⚠️ Sensor Anomalies Detected</h2>
+      <p>Device ID: ${deviceId}</p>
+      <p>The following issues were detected:</p>
+      <ul>${messageList}</ul>
+      <p>Please check your plants!</p>
+    `;
+        await this.sendEmail(settings.user.email, 'Plant Alert: Sensor Anomalies Detected', html);
     }
     async sendWelcomeEmail(email, name) {
         const templatePath = path.join(__dirname, 'templates', 'welcome.hbs');
@@ -69,7 +141,6 @@ let NotificationsService = class NotificationsService {
         const templatePath = path.join(__dirname, 'templates', 'unsuiteCondition.hbs');
         const templateSource = fs.readFileSync(templatePath, 'utf8');
         const template = handlebars.compile(templateSource);
-        ``;
         const html = template({
             title: 'Unsuitable Condition Alert',
             name,
@@ -83,6 +154,9 @@ let NotificationsService = class NotificationsService {
 exports.NotificationsService = NotificationsService;
 exports.NotificationsService = NotificationsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [config_1.ConfigService])
+    __param(2, (0, typeorm_1.InjectRepository)(notification_settings_entity_1.NotificationSettings)),
+    __metadata("design:paramtypes", [config_1.ConfigService,
+        devices_service_1.DevicesService,
+        typeorm_2.Repository])
 ], NotificationsService);
 //# sourceMappingURL=notifications.service.js.map

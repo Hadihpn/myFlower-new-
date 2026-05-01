@@ -1,0 +1,9 @@
+{
+  "directory": "./src",
+  "delete": true,
+  "exclude": ["main.ts", "\\.spec\\.ts$"],
+  "singleQuotes": true,
+  "noSemicolon": false,
+    "structure": "flat"
+
+}

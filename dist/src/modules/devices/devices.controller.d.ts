@@ -11,8 +11,8 @@ export declare class DevicesController {
         token: string;
     }>;
     findUserDevices(userId: number): Promise<import("./entities/device.entity").Device[]>;
-    findDeviceById(id: number): Promise<import("./entities/device.entity").Device>;
-    updateDevice(id: number, userId: number, updateDeviceDto: UpdateDeviceDto): Promise<import("./entities/device.entity").Device>;
-    deleteDevice(id: number, userId: number): Promise<void>;
-    calibrateDevice(id: number, userId: number, calibrationDto: CalibrationDto): Promise<import("./entities/device.entity").Device>;
+    findDeviceById(id: string): Promise<import("./entities/device.entity").Device>;
+    updateDevice(id: string, userId: number, updateDeviceDto: UpdateDeviceDto): Promise<import("./entities/device.entity").Device>;
+    deleteDevice(id: string, userId: number): Promise<void>;
+    calibrateDevice(id: string, userId: number, calibrationDto: CalibrationDto): Promise<import("./entities/device.entity").Device>;
 }

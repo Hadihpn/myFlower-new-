@@ -21,7 +21,7 @@ __decorate([
 ], SensorReading.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'device_id' }),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], SensorReading.prototype, "deviceId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'decimal', precision: 5, scale: 2 }),

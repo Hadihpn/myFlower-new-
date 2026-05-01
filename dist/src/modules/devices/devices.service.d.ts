@@ -10,11 +10,11 @@ export declare class DevicesService {
         token: string;
     }>;
     findUserDevices(userId: number): Promise<Device[]>;
-    findDeviceById(id: number): Promise<Device>;
+    findDeviceById(id: string): Promise<Device>;
     findDeviceByDeviceId(deviceId: string): Promise<Device>;
-    updateDevice(id: number, userId: number, updateDeviceDto: UpdateDeviceDto): Promise<Device>;
-    deleteDevice(id: number, userId: number): Promise<void>;
+    updateDevice(id: string, userId: number, updateDeviceDto: UpdateDeviceDto): Promise<Device>;
+    deleteDevice(id: string, userId: number): Promise<void>;
     updateLastSeen(deviceId: string): Promise<void>;
     verifyDeviceToken(deviceId: string, token: string): Promise<Device | null>;
-    calibrateDevice(id: number, userId: number, calibration: any): Promise<Device>;
+    calibrateDevice(id: string, userId: number, calibration: any): Promise<Device>;
 }

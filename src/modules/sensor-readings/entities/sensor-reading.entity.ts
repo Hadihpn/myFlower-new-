@@ -16,7 +16,7 @@ export class SensorReading {
   id: number;
 
   @Column({ name: 'device_id' })
-  deviceId: number;
+  deviceId: string;
 
   @Column({ type: 'decimal', precision: 5, scale: 2 })
   temperature: number;

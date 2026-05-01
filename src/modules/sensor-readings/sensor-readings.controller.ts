@@ -33,7 +33,7 @@ export class SensorReadingsController {
   @ApiOperation({ summary: 'Get device sensor readings' })
   @ApiResponse({ status: 200, description: 'List of sensor readings' })
   async getDeviceReadings(
-    @Param('deviceId', ParseIntPipe) deviceId: number,
+    @Param('deviceId') deviceId: string,
     @Query() queryDto: SensorQueryDto,
   ) {
     return this.sensorReadingsService.getDeviceReadings(deviceId, queryDto);
@@ -43,7 +43,7 @@ export class SensorReadingsController {
   // @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Get latest sensor reading' })
   @ApiResponse({ status: 200, description: 'Latest sensor reading' })
-  async getLatestReading(@Param('deviceId', ParseIntPipe) deviceId: number) {
+  async getLatestReading(@Param('deviceId', ParseIntPipe) deviceId: string) {
     return this.sensorReadingsService.getLatestReading(deviceId);
   }
 

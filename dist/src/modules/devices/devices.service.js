@@ -49,8 +49,9 @@ let DevicesService = class DevicesService {
         });
     }
     async findDeviceById(id) {
+        console.log("deviceId", id);
         const device = await this.deviceRepository.findOne({
-            where: { id },
+            where: { deviceId: id },
             relations: ['user'],
         });
         if (!device) {

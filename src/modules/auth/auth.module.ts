@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { User } from '@modules/users/entities/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -23,9 +24,10 @@ import { NotificationsService } from '../notifications/notifications.service';
       }),
       inject: [ConfigService],
     }),
+    NotificationsModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy,NotificationsService],
+  providers: [AuthService, JwtStrategy],
   exports: [AuthService, JwtStrategy, PassportModule],
 })
 export class AuthModule {}

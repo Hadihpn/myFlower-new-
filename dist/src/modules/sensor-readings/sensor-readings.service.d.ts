@@ -14,11 +14,12 @@ export declare class SensorReadingsService {
     private userPlantSelectionsService;
     private notificationsService;
     private configService;
+    private readonly logger;
     private readonly suddenChangeThresholds;
     constructor(readingRepository: Repository<SensorReading>, devicesService: DevicesService, verificationService: SensorVerificationService, userPlantSelectionsService: UserPlantSelectionsService, notificationsService: NotificationsService, configService: ConfigService);
     createReading(deviceId: string, createReadingDto: CreateSensorReadingDto): Promise<SensorReading>;
     getDeviceReadings(deviceId: number, queryDto: SensorQueryDto): Promise<SensorReading[]>;
-    getLatestReading(deviceId: number): Promise<SensorReading | null>;
+    getLatestReading(deviceId: string): Promise<SensorReading | null>;
     getAverageReadings(deviceId: number, startDate: Date, endDate: Date): Promise<{
         avgTemperature: number;
         avgMoisture: number;

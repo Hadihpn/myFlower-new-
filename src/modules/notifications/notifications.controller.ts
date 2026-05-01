@@ -1,34 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Request } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
+import { NotificationSettingsResponseDto } from './dto/notification-settings-response.dto';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
+@ApiTags('notifications')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
-  @Post()
-  create(@Body() createNotificationDto: CreateNotificationDto) {
-    // return this.notificationsService.create(createNotificationDto);
+  @Get('settings')
+  @ApiResponse({ status: 200, type: NotificationSettingsResponseDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiOperation({ summary: 'Get user notification settings' })
+  async getSettings(@Request() req): Promise<NotificationSettingsResponseDto> {
+    const userId = req.user.id;
+    return this.notificationsService.getSettings(userId);
   }
 
-  @Get()
-  findAll() {
-    // return this.notificationsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    // return this.notificationsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNotificationDto: UpdateNotificationDto) {
-    // return this.notificationsService.update(+id, updateNotificationDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    // return this.notificationsService.remove(+id);
+  @Patch('settings')
+  @ApiResponse({ status: 200, type: NotificationSettingsResponseDto })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiOperation({ summary: 'Update user notification settings' })
+  async updateSettings(
+    @Request() req,
+    @Body() dto: UpdateNotificationSettingsDto,
+  ): Promise<NotificationSettingsResponseDto> {
+    const userId = req.user.id;
+    return this.notificationsService.updateSettings(userId, dto);
   }
 }

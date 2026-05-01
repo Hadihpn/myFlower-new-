@@ -16,7 +16,8 @@ class CreateSensorReadingsTable1700000000010 {
                 },
                 {
                     name: 'device_id',
-                    type: 'int',
+                    type: 'varchar',
+                    length: '255',
                     isNullable: false,
                 },
                 {
@@ -56,24 +57,28 @@ class CreateSensorReadingsTable1700000000010 {
                     name: 'verified',
                     type: 'boolean',
                     default: false,
+                    isNullable: false,
                 },
                 {
                     name: 'anomaly',
                     type: 'boolean',
                     default: false,
+                    isNullable: false,
                 },
                 {
                     name: 'created_at',
                     type: 'timestamp',
                     default: 'CURRENT_TIMESTAMP',
+                    isNullable: false,
                 },
             ],
         }), true);
         await queryRunner.createForeignKey('sensor_readings', new typeorm_1.TableForeignKey({
             columnNames: ['device_id'],
-            referencedColumnNames: ['id'],
             referencedTableName: 'devices',
+            referencedColumnNames: ['device_id'],
             onDelete: 'CASCADE',
+            name: 'FK_SENSOR_READINGS_DEVICE',
         }));
         await queryRunner.createIndex('sensor_readings', new typeorm_1.TableIndex({
             name: 'IDX_SENSOR_READINGS_DEVICE_TIMESTAMP',
@@ -92,11 +97,7 @@ class CreateSensorReadingsTable1700000000010 {
         await queryRunner.dropIndex('sensor_readings', 'IDX_SENSOR_READINGS_ANOMALY');
         await queryRunner.dropIndex('sensor_readings', 'IDX_SENSOR_READINGS_TIMESTAMP');
         await queryRunner.dropIndex('sensor_readings', 'IDX_SENSOR_READINGS_DEVICE_TIMESTAMP');
-        const table = await queryRunner.getTable('sensor_readings');
-        const foreignKey = table.foreignKeys.find((fk) => fk.columnNames.indexOf('device_id') !== -1);
-        if (foreignKey) {
-            await queryRunner.dropForeignKey('sensor_readings', foreignKey);
-        }
+        await queryRunner.dropForeignKey('sensor_readings', 'FK_SENSOR_READINGS_DEVICE');
         await queryRunner.dropTable('sensor_readings');
     }
 }

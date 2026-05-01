@@ -195,10 +195,12 @@ export class PlantsService {
   }
 
   async findPackageById(id: number): Promise<PlantPackage> {
+    console.log("findPackageById")
     const plantPackage = await this.packageRepository.findOne({
       where: { id },
       relations: ['items', 'items.plantSpecies'],
     });
+console.log("plantPackage", plantPackage);
 
     if (!plantPackage) {
       throw new NotFoundException(`Plant package with ID ${id} not found`);

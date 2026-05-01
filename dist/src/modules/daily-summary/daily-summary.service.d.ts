@@ -1,10 +1,10 @@
 import { Repository } from 'typeorm';
 import { DailySummary } from './entities/daily-summary.entity';
-import { SensorReadingsService } from '@modules/sensor-readings/sensor-readings.service';
+import { SensorReading } from '../sensor-readings/entities/sensor-reading.entity';
 export declare class DailySummaryService {
     private summaryRepository;
-    private sensorReadingsService;
-    constructor(summaryRepository: Repository<DailySummary>, sensorReadingsService: SensorReadingsService);
+    private sensorReadingRepository;
+    constructor(summaryRepository: Repository<DailySummary>, sensorReadingRepository: Repository<SensorReading>);
     generateDailySummaries(): Promise<void>;
     getSummary(deviceId: number, date: Date): Promise<DailySummary | null>;
     getDeviceSummaries(deviceId: number, limit?: number): Promise<DailySummary[]>;

@@ -6,7 +6,7 @@ export declare class SensorReadingsController {
     constructor(sensorReadingsService: SensorReadingsService);
     createReading(deviceId: string, createReadingDto: CreateSensorReadingDto): Promise<import("./entities/sensor-reading.entity").SensorReading>;
     getDeviceReadings(deviceId: number, queryDto: SensorQueryDto): Promise<import("./entities/sensor-reading.entity").SensorReading[]>;
-    getLatestReading(deviceId: number): Promise<import("./entities/sensor-reading.entity").SensorReading>;
+    getLatestReading(deviceId: string): Promise<import("./entities/sensor-reading.entity").SensorReading>;
     getDailyStats(deviceId: number, date: string): Promise<{
         minTemperature: number;
         maxTemperature: number;

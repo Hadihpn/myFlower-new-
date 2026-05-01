@@ -60,7 +60,7 @@ export class DevicesController {
   @ApiOperation({ summary: 'Get device by ID' })
   @ApiResponse({ status: 200, description: 'Device found' })
   @ApiResponse({ status: 404, description: 'Device not found' })
-  findDeviceById(@Param('id', ParseIntPipe) id: number) {
+  findDeviceById(@Param('id', ParseIntPipe) id: string) {
     return this.devicesService.findDeviceById(id);
   }
 
@@ -70,7 +70,7 @@ export class DevicesController {
   @ApiResponse({ status: 404, description: 'Device not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   updateDevice(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: string,
     @CurrentUser('id') userId: number,
     @Body() updateDeviceDto: UpdateDeviceDto,
   ) {
@@ -83,7 +83,7 @@ export class DevicesController {
   @ApiResponse({ status: 404, description: 'Device not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   deleteDevice(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: string,
     @CurrentUser('id') userId: number,
   ) {
     return this.devicesService.deleteDevice(id, userId);
@@ -93,7 +93,7 @@ export class DevicesController {
   @ApiOperation({ summary: 'Calibrate device sensors' })
   @ApiResponse({ status: 200, description: 'Device calibrated successfully' })
   calibrateDevice(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) id: string,
     @CurrentUser('id') userId: number,
     @Body() calibrationDto: CalibrationDto,
   ) {

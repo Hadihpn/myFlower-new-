@@ -7,45 +7,88 @@ class CreateUserActionsTable1700000000013 {
         await queryRunner.createTable(new typeorm_1.Table({
             name: 'user_actions',
             columns: [
-                { name: 'id', type: 'int', isPrimary: true, isGenerated: true, generationStrategy: 'increment' },
-                { name: 'user_id', type: 'int', isNullable: false },
-                { name: 'device_id', type: 'int', isNullable: false },
-                { name: 'selection_id', type: 'int', isNullable: false },
-                { name: 'action_type', type: 'varchar', length: '50', isNullable: false },
-                { name: 'notes', type: 'text', isNullable: true },
-                { name: 'action_date', type: 'timestamp', isNullable: false },
-                { name: 'created_at', type: 'timestamp', default: 'CURRENT_TIMESTAMP' },
+                {
+                    name: 'id',
+                    type: 'int',
+                    isPrimary: true,
+                    isGenerated: true,
+                    generationStrategy: 'increment',
+                },
+                {
+                    name: 'user_id',
+                    type: 'int',
+                    isNullable: false,
+                },
+                {
+                    name: 'device_id',
+                    type: 'int',
+                    isNullable: false,
+                },
+                {
+                    name: 'selection_id',
+                    type: 'int',
+                    isNullable: false,
+                },
+                {
+                    name: 'action_type',
+                    type: 'enum',
+                    enum: ['watered', 'fertilized', 'pruned', 'moved', 'other'],
+                    isNullable: false,
+                },
+                {
+                    name: 'notes',
+                    type: 'text',
+                    isNullable: true,
+                },
+                {
+                    name: 'action_date',
+                    type: 'timestamp',
+                    isNullable: false,
+                },
+                {
+                    name: 'created_at',
+                    type: 'timestamp',
+                    default: 'CURRENT_TIMESTAMP',
+                    isNullable: false,
+                },
             ],
         }), true);
         await queryRunner.createForeignKey('user_actions', new typeorm_1.TableForeignKey({
+            name: 'FK_USER_ACTIONS_USER',
             columnNames: ['user_id'],
-            referencedColumnNames: ['id'],
             referencedTableName: 'users',
+            referencedColumnNames: ['id'],
             onDelete: 'CASCADE',
         }));
         await queryRunner.createForeignKey('user_actions', new typeorm_1.TableForeignKey({
+            name: 'FK_USER_ACTIONS_DEVICE',
             columnNames: ['device_id'],
-            referencedColumnNames: ['id'],
             referencedTableName: 'devices',
+            referencedColumnNames: ['id'],
             onDelete: 'CASCADE',
         }));
         await queryRunner.createForeignKey('user_actions', new typeorm_1.TableForeignKey({
+            name: 'FK_USER_ACTIONS_SELECTION',
             columnNames: ['selection_id'],
-            referencedColumnNames: ['id'],
             referencedTableName: 'user_plant_selections',
+            referencedColumnNames: ['id'],
             onDelete: 'CASCADE',
         }));
         await queryRunner.createIndex('user_actions', new typeorm_1.TableIndex({
             name: 'IDX_USER_ACTIONS_SELECTION_DATE',
             columnNames: ['selection_id', 'action_date'],
         }));
+        await queryRunner.createIndex('user_actions', new typeorm_1.TableIndex({
+            name: 'IDX_USER_ACTIONS_USER',
+            columnNames: ['user_id'],
+        }));
     }
     async down(queryRunner) {
+        await queryRunner.dropIndex('user_actions', 'IDX_USER_ACTIONS_USER');
         await queryRunner.dropIndex('user_actions', 'IDX_USER_ACTIONS_SELECTION_DATE');
-        const table = await queryRunner.getTable('user_actions');
-        for (const fk of table.foreignKeys) {
-            await queryRunner.dropForeignKey('user_actions', fk);
-        }
+        await queryRunner.dropForeignKey('user_actions', 'FK_USER_ACTIONS_SELECTION');
+        await queryRunner.dropForeignKey('user_actions', 'FK_USER_ACTIONS_DEVICE');
+        await queryRunner.dropForeignKey('user_actions', 'FK_USER_ACTIONS_USER');
         await queryRunner.dropTable('user_actions');
     }
 }

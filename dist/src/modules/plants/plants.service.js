@@ -143,10 +143,12 @@ let PlantsService = class PlantsService {
         });
     }
     async findPackageById(id) {
+        console.log("findPackageById");
         const plantPackage = await this.packageRepository.findOne({
             where: { id },
             relations: ['items', 'items.plantSpecies'],
         });
+        console.log("plantPackage", plantPackage);
         if (!plantPackage) {
             throw new common_1.NotFoundException(`Plant package with ID ${id} not found`);
         }

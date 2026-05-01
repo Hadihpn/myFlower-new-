@@ -12,28 +12,27 @@ const typeorm_1 = require("@nestjs/typeorm");
 const sensor_readings_service_1 = require("./sensor-readings.service");
 const sensor_readings_controller_1 = require("./sensor-readings.controller");
 const sensor_reading_entity_1 = require("./entities/sensor-reading.entity");
+const device_sensor_stats_entity_1 = require("./entities/device-sensor-stats.entity");
 const devices_module_1 = require("../devices/devices.module");
 const sensor_verification_module_1 = require("../sensor-verification/sensor-verification.module");
-const subscription_module_1 = require("../subscription/subscription.module");
-const plants_module_1 = require("../plants/plants.module");
+const user_plant_selections_module_1 = require("../user-plant-selections/user-plant-selections.module");
+const notifications_module_1 = require("../notifications/notifications.module");
 const device_entity_1 = require("../devices/entities/device.entity");
-const notifications_service_1 = require("../notifications/notifications.service");
-const user_plant_selections_service_1 = require("../user-plant-selections/user-plant-selections.service");
-const user_plant_selection_entity_1 = require("../user-plant-selections/entities/user-plant-selection.entity");
+const device_auth_guard_1 = require("../../common/guards/device-auth.guard");
 let SensorReadingsModule = class SensorReadingsModule {
 };
 exports.SensorReadingsModule = SensorReadingsModule;
 exports.SensorReadingsModule = SensorReadingsModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            typeorm_1.TypeOrmModule.forFeature([sensor_reading_entity_1.SensorReading, device_entity_1.Device, user_plant_selection_entity_1.UserPlantSelection]),
+            typeorm_1.TypeOrmModule.forFeature([sensor_reading_entity_1.SensorReading, device_sensor_stats_entity_1.DeviceSensorStats, device_entity_1.Device]),
             devices_module_1.DevicesModule,
-            (0, common_1.forwardRef)(() => sensor_verification_module_1.SensorVerificationModule),
-            subscription_module_1.SubscriptionModule,
-            plants_module_1.PlantsModule,
+            sensor_verification_module_1.SensorVerificationModule,
+            user_plant_selections_module_1.UserPlantSelectionsModule,
+            notifications_module_1.NotificationsModule,
         ],
         controllers: [sensor_readings_controller_1.SensorReadingsController],
-        providers: [sensor_readings_service_1.SensorReadingsService, notifications_service_1.NotificationsService, user_plant_selections_service_1.UserPlantSelectionsService],
+        providers: [sensor_readings_service_1.SensorReadingsService, device_auth_guard_1.DeviceAuthGuard],
         exports: [sensor_readings_service_1.SensorReadingsService],
     })
 ], SensorReadingsModule);

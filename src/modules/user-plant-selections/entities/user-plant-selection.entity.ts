@@ -25,7 +25,7 @@ export class UserPlantSelection {
   userId: number;
 
   @Column({ name: 'device_id' })
-  deviceId: number;
+  deviceId: string;
 
   @Column({ name: 'package_id', nullable: true })
   packageId: number;

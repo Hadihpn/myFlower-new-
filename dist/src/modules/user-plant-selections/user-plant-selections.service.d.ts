@@ -13,9 +13,9 @@ export declare class UserPlantSelectionsService {
     constructor(selectionRepository: Repository<UserPlantSelection>, subscriptionService: SubscriptionService, devicesService: DevicesService, plantsService: PlantsService);
     createSelection(userId: number, createSelectionDto: CreateSelectionDto): Promise<UserPlantSelection>;
     getUserSelections(userId: number): Promise<UserPlantSelection[]>;
-    getDeviceSelections(userId: number, deviceId: number): Promise<UserPlantSelection[]>;
-    getCurrentlyMonitored(userId: number, deviceId: number): Promise<UserPlantSelection | null>;
-    switchMonitoring(userId: number, deviceId: number, selectionId: number): Promise<UserPlantSelection>;
+    getDeviceSelections(userId: number, deviceId: string): Promise<UserPlantSelection[]>;
+    getCurrentlyMonitored(userId: number, deviceId: string): Promise<UserPlantSelection | null>;
+    switchMonitoring(userId: number, deviceId: string, selectionId: number): Promise<UserPlantSelection>;
     updateSelection(userId: number, selectionId: number, updateSelectionDto: UpdateSelectionDto): Promise<UserPlantSelection>;
     deleteSelection(userId: number, selectionId: number): Promise<void>;
     getSelectionById(userId: number, selectionId: number): Promise<UserPlantSelection>;

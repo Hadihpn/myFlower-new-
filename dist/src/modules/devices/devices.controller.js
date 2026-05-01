@@ -79,7 +79,7 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 404, description: 'Device not found' }),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], DevicesController.prototype, "findDeviceById", null);
 __decorate([
@@ -92,7 +92,7 @@ __decorate([
     __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number, update_device_dto_1.UpdateDeviceDto]),
+    __metadata("design:paramtypes", [String, Number, update_device_dto_1.UpdateDeviceDto]),
     __metadata("design:returntype", void 0)
 ], DevicesController.prototype, "updateDevice", null);
 __decorate([
@@ -104,7 +104,7 @@ __decorate([
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:paramtypes", [String, Number]),
     __metadata("design:returntype", void 0)
 ], DevicesController.prototype, "deleteDevice", null);
 __decorate([
@@ -115,7 +115,7 @@ __decorate([
     __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number, calibration_dto_1.CalibrationDto]),
+    __metadata("design:paramtypes", [String, Number, calibration_dto_1.CalibrationDto]),
     __metadata("design:returntype", void 0)
 ], DevicesController.prototype, "calibrateDevice", null);
 exports.DevicesController = DevicesController = __decorate([

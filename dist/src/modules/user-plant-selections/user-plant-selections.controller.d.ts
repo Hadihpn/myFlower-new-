@@ -7,9 +7,9 @@ export declare class UserPlantSelectionsController {
     constructor(selectionsService: UserPlantSelectionsService);
     createSelection(userId: number, createSelectionDto: CreateSelectionDto): Promise<import("./entities/user-plant-selection.entity").UserPlantSelection>;
     getUserSelections(userId: number): Promise<import("./entities/user-plant-selection.entity").UserPlantSelection[]>;
-    getDeviceSelections(userId: number, deviceId: number): Promise<import("./entities/user-plant-selection.entity").UserPlantSelection[]>;
-    getCurrentlyMonitored(userId: number, deviceId: number): Promise<import("./entities/user-plant-selection.entity").UserPlantSelection>;
-    switchMonitoring(userId: number, deviceId: number, switchDto: SwitchMonitoringDto): Promise<import("./entities/user-plant-selection.entity").UserPlantSelection>;
+    getDeviceSelections(userId: number, deviceId: string): Promise<import("./entities/user-plant-selection.entity").UserPlantSelection[]>;
+    getCurrentlyMonitored(userId: number, deviceId: string): Promise<import("./entities/user-plant-selection.entity").UserPlantSelection>;
+    switchMonitoring(userId: number, deviceId: string, switchDto: SwitchMonitoringDto): Promise<import("./entities/user-plant-selection.entity").UserPlantSelection>;
     getSelectionById(userId: number, id: number): Promise<import("./entities/user-plant-selection.entity").UserPlantSelection>;
     updateSelection(userId: number, id: number, updateSelectionDto: UpdateSelectionDto): Promise<import("./entities/user-plant-selection.entity").UserPlantSelection>;
     deleteSelection(userId: number, id: number): Promise<void>;

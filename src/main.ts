@@ -99,7 +99,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get<number>('port') || 3000;
-  await app.listen(port);
+  await app.listen(3000,'0.0.0.0');
 
   console.log(`🚀 Application is running on: http://localhost:${port}`);
   console.log(`✅ Database connected successfully!`);

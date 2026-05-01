@@ -75,7 +75,7 @@ let SensorVerificationService = class SensorVerificationService {
         verification.confidence = analysis.confidence;
         await this.verificationRepository.save(verification);
         if (verification.confirmed) {
-            await this.notificationsService.sendSuddenChangeAlert(verification.deviceId, verification.changeType, verification.changeMagnitude);
+            await this.notificationsService.sendSuddenChangeAlert(verification.deviceId.toString(), verification.changeType, verification.changeMagnitude);
         }
     }
     analyzeReadings(verification) {

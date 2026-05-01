@@ -1,14 +1,6 @@
-import {
-  MigrationInterface,
-  QueryRunner,
-  Table,
-  TableForeignKey,
-  TableIndex,
-} from 'typeorm';
+import { MigrationInterface, QueryRunner, Table, TableIndex, TableForeignKey } from 'typeorm';
 
-export class CreateSensorReadingsTable1700000000010
-  implements MigrationInterface
-{
+export class CreateSensorReadingsTable1700000000010 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
@@ -23,7 +15,8 @@ export class CreateSensorReadingsTable1700000000010
           },
           {
             name: 'device_id',
-            type: 'int',
+            type: 'varchar',
+            length: '255',
             isNullable: false,
           },
           {
@@ -63,34 +56,38 @@ export class CreateSensorReadingsTable1700000000010
             name: 'verified',
             type: 'boolean',
             default: false,
+            isNullable: false,
           },
           {
             name: 'anomaly',
             type: 'boolean',
             default: false,
+            isNullable: false,
           },
           {
             name: 'created_at',
             type: 'timestamp',
             default: 'CURRENT_TIMESTAMP',
+            isNullable: false,
           },
         ],
       }),
       true,
     );
 
-    // Foreign key
+    // Foreign key to devices.device_id (string)
     await queryRunner.createForeignKey(
       'sensor_readings',
       new TableForeignKey({
         columnNames: ['device_id'],
-        referencedColumnNames: ['id'],
         referencedTableName: 'devices',
+        referencedColumnNames: ['device_id'],
         onDelete: 'CASCADE',
+        name: 'FK_SENSOR_READINGS_DEVICE',
       }),
     );
 
-    // Composite index for efficient time-series queries
+    // Composite index on device_id and timestamp
     await queryRunner.createIndex(
       'sensor_readings',
       new TableIndex({
@@ -99,6 +96,7 @@ export class CreateSensorReadingsTable1700000000010
       }),
     );
 
+    // Index on timestamp for time-range queries
     await queryRunner.createIndex(
       'sensor_readings',
       new TableIndex({
@@ -107,6 +105,7 @@ export class CreateSensorReadingsTable1700000000010
       }),
     );
 
+    // Index on anomaly for filtering
     await queryRunner.createIndex(
       'sensor_readings',
       new TableIndex({
@@ -117,27 +116,10 @@ export class CreateSensorReadingsTable1700000000010
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropIndex(
-      'sensor_readings',
-      'IDX_SENSOR_READINGS_ANOMALY',
-    );
-    await queryRunner.dropIndex(
-      'sensor_readings',
-      'IDX_SENSOR_READINGS_TIMESTAMP',
-    );
-    await queryRunner.dropIndex(
-      'sensor_readings',
-      'IDX_SENSOR_READINGS_DEVICE_TIMESTAMP',
-    );
-
-    const table = await queryRunner.getTable('sensor_readings');
-    const foreignKey = table.foreignKeys.find(
-      (fk) => fk.columnNames.indexOf('device_id') !== -1,
-    );
-    if (foreignKey) {
-      await queryRunner.dropForeignKey('sensor_readings', foreignKey);
-    }
-
+    await queryRunner.dropIndex('sensor_readings', 'IDX_SENSOR_READINGS_ANOMALY');
+    await queryRunner.dropIndex('sensor_readings', 'IDX_SENSOR_READINGS_TIMESTAMP');
+    await queryRunner.dropIndex('sensor_readings', 'IDX_SENSOR_READINGS_DEVICE_TIMESTAMP');
+    await queryRunner.dropForeignKey('sensor_readings', 'FK_SENSOR_READINGS_DEVICE');
     await queryRunner.dropTable('sensor_readings');
   }
 }

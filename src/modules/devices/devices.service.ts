@@ -58,9 +58,10 @@ export class DevicesService {
     });
   }
 
-  async findDeviceById(id: number): Promise<Device> {
+  async findDeviceById(id: string): Promise<Device> {
+    console.log("deviceId",id)
     const device = await this.deviceRepository.findOne({
-      where: { id },
+      where: { deviceId:id },
       relations: ['user'],
     });
 
@@ -85,7 +86,7 @@ export class DevicesService {
   }
 
   async updateDevice(
-    id: number,
+    id: string,
     userId: number,
     updateDeviceDto: UpdateDeviceDto,
   ): Promise<Device> {
@@ -100,7 +101,7 @@ export class DevicesService {
     return this.deviceRepository.save(device);
   }
 
-  async deleteDevice(id: number, userId: number): Promise<void> {
+  async deleteDevice(id: string, userId: number): Promise<void> {
     const device = await this.findDeviceById(id);
 
     // Verify ownership
@@ -142,7 +143,7 @@ export class DevicesService {
   }
 
   async calibrateDevice(
-    id: number,
+    id: string,
     userId: number,
     calibration: any,
   ): Promise<Device> {

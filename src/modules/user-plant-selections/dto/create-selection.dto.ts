@@ -11,9 +11,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSelectionDto {
   @ApiProperty({ example: 1 })
-  @IsInt()
   @IsNotEmpty()
-  deviceId: number;
+  deviceId: string;
 
   @ApiPropertyOptional({ example: 1, description: 'Plant package ID (mutually exclusive with plantSpeciesId)' })
   @IsOptional()

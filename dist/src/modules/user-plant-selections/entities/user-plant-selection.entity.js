@@ -29,7 +29,7 @@ __decorate([
 ], UserPlantSelection.prototype, "userId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'device_id' }),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], UserPlantSelection.prototype, "deviceId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ name: 'package_id', nullable: true }),

@@ -17,17 +17,75 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const daily_summary_entity_1 = require("./entities/daily-summary.entity");
-const sensor_readings_service_1 = require("../sensor-readings/sensor-readings.service");
 const schedule_1 = require("@nestjs/schedule");
+const sensor_reading_entity_1 = require("../sensor-readings/entities/sensor-reading.entity");
 let DailySummaryService = class DailySummaryService {
-    constructor(summaryRepository, sensorReadingsService) {
+    constructor(summaryRepository, sensorReadingRepository) {
         this.summaryRepository = summaryRepository;
-        this.sensorReadingsService = sensorReadingsService;
+        this.sensorReadingRepository = sensorReadingRepository;
     }
     async generateDailySummaries() {
-        console.log('Generating daily summaries...');
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
+        const dateStr = yesterday.toISOString().split('T')[0];
+        const devices = await this.sensorReadingRepository
+            .createQueryBuilder('r')
+            .select('DISTINCT r.device_id', 'deviceId')
+            .where('DATE(r.timestamp) = :date', { date: dateStr })
+            .getRawMany();
+        if (!devices.length)
+            return;
+        for (const { deviceId } of devices) {
+            const agg = await this.sensorReadingRepository
+                .createQueryBuilder('r')
+                .select('MIN(r.temperature)', 'minTemperature')
+                .addSelect('MAX(r.temperature)', 'maxTemperature')
+                .addSelect('AVG(r.temperature)', 'avgTemperature')
+                .addSelect('MIN(r.moisture)', 'minMoisture')
+                .addSelect('MAX(r.moisture)', 'maxMoisture')
+                .addSelect('AVG(r.moisture)', 'avgMoisture')
+                .addSelect('MIN(r.light)', 'minLight')
+                .addSelect('MAX(r.light)', 'maxLight')
+                .addSelect('AVG(r.light)', 'avgLight')
+                .addSelect('COUNT(r.id)', 'readingCount')
+                .where('r.device_id = :deviceId', { deviceId })
+                .andWhere('DATE(r.timestamp) = :date', { date: dateStr })
+                .getRawOne();
+            if (!agg || !agg.readingCount)
+                continue;
+            await this.summaryRepository
+                .createQueryBuilder()
+                .insert()
+                .into(daily_summary_entity_1.DailySummary)
+                .values({
+                deviceId,
+                date: new Date(dateStr),
+                minTemperature: parseFloat(agg.minTemperature),
+                maxTemperature: parseFloat(agg.maxTemperature),
+                avgTemperature: parseFloat(agg.avgTemperature),
+                minMoisture: parseFloat(agg.minMoisture),
+                maxMoisture: parseFloat(agg.maxMoisture),
+                avgMoisture: parseFloat(agg.avgMoisture),
+                minLight: parseFloat(agg.minLight),
+                maxLight: parseFloat(agg.maxLight),
+                avgLight: parseFloat(agg.avgLight),
+                readingCount: parseInt(agg.readingCount),
+            })
+                .orUpdate([
+                'min_temperature',
+                'max_temperature',
+                'avg_temperature',
+                'min_moisture',
+                'max_moisture',
+                'avg_moisture',
+                'min_light',
+                'max_light',
+                'avg_light',
+                'reading_count',
+            ], ['device_id', 'date'])
+                .execute();
+        }
+        console.log(`Daily summaries generated for ${devices.length} devices on ${dateStr}`);
     }
     async getSummary(deviceId, date) {
         return this.summaryRepository.findOne({
@@ -52,7 +110,8 @@ __decorate([
 exports.DailySummaryService = DailySummaryService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(daily_summary_entity_1.DailySummary)),
+    __param(1, (0, typeorm_1.InjectRepository)(sensor_reading_entity_1.SensorReading)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        sensor_readings_service_1.SensorReadingsService])
+        typeorm_2.Repository])
 ], DailySummaryService);
 //# sourceMappingURL=daily-summary.service.js.map

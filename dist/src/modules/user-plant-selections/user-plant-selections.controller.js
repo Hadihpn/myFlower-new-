@@ -25,6 +25,7 @@ let UserPlantSelectionsController = class UserPlantSelectionsController {
         this.selectionsService = selectionsService;
     }
     createSelection(userId, createSelectionDto) {
+        console.log("deviceID :", createSelectionDto.deviceId);
         return this.selectionsService.createSelection(userId, createSelectionDto);
     }
     getUserSelections(userId) {
@@ -75,9 +76,9 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Get selections for specific device' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'List of device selections' }),
     __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
-    __param(1, (0, common_1.Param)('deviceId', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Param)('deviceId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:paramtypes", [Number, String]),
     __metadata("design:returntype", void 0)
 ], UserPlantSelectionsController.prototype, "getDeviceSelections", null);
 __decorate([
@@ -87,7 +88,7 @@ __decorate([
     __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __param(1, (0, common_1.Param)('deviceId', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number]),
+    __metadata("design:paramtypes", [Number, String]),
     __metadata("design:returntype", void 0)
 ], UserPlantSelectionsController.prototype, "getCurrentlyMonitored", null);
 __decorate([
@@ -98,7 +99,7 @@ __decorate([
     __param(1, (0, common_1.Param)('deviceId', common_1.ParseIntPipe)),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number, switch_monitoring_dto_1.SwitchMonitoringDto]),
+    __metadata("design:paramtypes", [Number, String, switch_monitoring_dto_1.SwitchMonitoringDto]),
     __metadata("design:returntype", void 0)
 ], UserPlantSelectionsController.prototype, "switchMonitoring", null);
 __decorate([
