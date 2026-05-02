@@ -23,6 +23,7 @@ const sensor_verification_service_1 = require("../sensor-verification/sensor-ver
 const config_1 = require("@nestjs/config");
 const user_plant_selections_service_1 = require("../user-plant-selections/user-plant-selections.service");
 const notifications_service_1 = require("../notifications/notifications.service");
+const chart_query_dto_1 = require("./dto/chart-query.dto");
 let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsService {
     constructor(readingRepository, devicesService, verificationService, userPlantSelectionsService, notificationsService, configService) {
         this.readingRepository = readingRepository;
@@ -217,6 +218,86 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
         catch (err) {
             this.logger.warn(`checkPlantThresholds failed for device ${deviceId} / user ${userId}: ${err.message}`);
         }
+    }
+    getDateTruncExpression(interval) {
+        const field = interval === chart_query_dto_1.ChartInterval.HOURLY ? 'hour' : 'day';
+        return `DATE_TRUNC('${field}', reading.timestamp) as time_bucket`;
+    }
+    async verifyDeviceOwnership(deviceId, userId) {
+        const device = await this.devicesService.findDeviceByDeviceId(deviceId);
+        if (!device) {
+            throw new common_1.NotFoundException(`Device with ID ${deviceId} not found`);
+        }
+        if (device.userId !== userId) {
+            throw new common_1.ForbiddenException('You do not have access to this device');
+        }
+    }
+    async getChartData(deviceId, userId, range, interval) {
+        await this.verifyDeviceOwnership(deviceId, userId);
+        const { startDate, endDate } = this.calculateDateRange(range);
+        const aggregatedData = await this.aggregateReadings(deviceId, startDate, endDate, interval);
+        return {
+            deviceId,
+            range,
+            interval,
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString(),
+            data: aggregatedData,
+        };
+    }
+    async aggregateReadings(deviceId, startDate, endDate, interval) {
+        let truncFormat;
+        switch (interval) {
+            case chart_query_dto_1.ChartInterval.HOURLY:
+                truncFormat = 'hour';
+                break;
+            case chart_query_dto_1.ChartInterval.DAILY:
+                truncFormat = 'day';
+                break;
+            case chart_query_dto_1.ChartInterval.WEEKLY:
+                truncFormat = 'week';
+                break;
+        }
+        const query = this.readingRepository
+            .createQueryBuilder('reading')
+            .select(`DATE_TRUNC('${truncFormat}', reading.timestamp)`, 'period')
+            .addSelect('AVG(reading.temperature)', 'avgTemperature')
+            .addSelect('AVG(reading.humidity)', 'avgHumidity')
+            .addSelect('AVG(reading.moisture)', 'avgSoilMoisture')
+            .addSelect('AVG(reading.light)', 'avgLightLevel')
+            .addSelect('COUNT(reading.id)', 'count')
+            .where('reading.deviceId = :deviceId', { deviceId })
+            .andWhere('reading.timestamp BETWEEN :startDate AND :endDate', {
+            startDate,
+            endDate,
+        })
+            .groupBy('period')
+            .orderBy('period', 'ASC');
+        const results = await query.getRawMany();
+        return results.map((row) => ({
+            timestamp: row.period,
+            temperature: parseFloat(row.avgTemperature) || null,
+            humidity: parseFloat(row.avgHumidity) || null,
+            soilMoisture: parseFloat(row.avgSoilMoisture) || null,
+            lightLevel: parseFloat(row.avgLightLevel) || null,
+            readingsCount: parseInt(row.count, 10),
+        }));
+    }
+    calculateDateRange(range) {
+        const endDate = new Date();
+        const startDate = new Date();
+        switch (range) {
+            case chart_query_dto_1.ChartRange.SEVEN_DAYS:
+                startDate.setDate(endDate.getDate() - 7);
+                break;
+            case chart_query_dto_1.ChartRange.THIRTY_DAYS:
+                startDate.setDate(endDate.getDate() - 30);
+                break;
+            case chart_query_dto_1.ChartRange.NINETY_DAYS:
+                startDate.setDate(endDate.getDate() - 90);
+                break;
+        }
+        return { startDate, endDate };
     }
 };
 exports.SensorReadingsService = SensorReadingsService;

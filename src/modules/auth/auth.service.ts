@@ -27,8 +27,6 @@ export class AuthService {
     private notificationsService: NotificationsService,
   ) {}
 
-  
-
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
     const { email, password, fullName, phoneNumber } = registerDto;
 
@@ -52,7 +50,7 @@ export class AuthService {
     });
 
     await this.userRepository.save(user);
-await this.notificationsService.sendWelcomeEmail(user.email, user.fullName);
+    await this.notificationsService.sendWelcomeEmail(user.email, user.fullName);
     // Generate tokens
     return this.generateTokens(user);
   }
@@ -145,7 +143,7 @@ await this.notificationsService.sendWelcomeEmail(user.email, user.fullName);
     return null;
   }
 
-  private   generateTokens(user: User): AuthResponse {
+  private generateTokens(user: User): AuthResponse {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,

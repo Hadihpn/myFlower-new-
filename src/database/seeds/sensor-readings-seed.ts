@@ -43,7 +43,7 @@ async function seedSensorReadings() {
             ${moisture},
             ${light},
             ${humidity},
-            NOW() - INTERVAL '${hoursAgo} hours',
+            NOW() + INTERVAL '${hoursAgo} hours',
             ${verified},
             ${anomaly},
             NOW()

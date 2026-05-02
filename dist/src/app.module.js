@@ -31,6 +31,7 @@ const admin_module_1 = require("./modules/admin/admin.module");
 const daily_summary_module_1 = require("./modules/daily-summary/daily-summary.module");
 const throttler_2 = require("@nestjs/throttler");
 const jwt_auth_guard_1 = require("./common/guards/jwt-auth.guard");
+const cache_manager_1 = require("@nestjs/cache-manager");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -40,6 +41,11 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
                 load: [configuration_1.default],
+            }),
+            cache_manager_1.CacheModule.register({
+                isGlobal: true,
+                ttl: 300,
+                max: 1000,
             }),
             typeorm_1.TypeOrmModule.forRootAsync({
                 imports: [config_1.ConfigModule],
@@ -58,10 +64,12 @@ exports.AppModule = AppModule = __decorate([
             }),
             throttler_1.ThrottlerModule.forRootAsync({
                 imports: [config_1.ConfigModule],
-                useFactory: (configService) => ([{
+                useFactory: (configService) => [
+                    {
                         ttl: configService.get('throttle.ttl'),
                         limit: configService.get('throttle.limit'),
-                    }]),
+                    },
+                ],
                 inject: [config_1.ConfigService],
             }),
             auth_module_1.AuthModule,

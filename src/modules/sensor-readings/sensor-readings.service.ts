@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SensorReading } from './entities/sensor-reading.entity';
@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { UserPlantSelectionsService } from '../user-plant-selections/user-plant-selections.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { DeviceCalibration } from '@modules/devices/types/calibration.interface';
+import { ChartInterval, ChartQueryDto, ChartRange } from './dto/chart-query.dto';
 
 @Injectable()
 export class SensorReadingsService {
@@ -349,5 +350,120 @@ export class SensorReadingsService {
         `checkPlantThresholds failed for device ${deviceId} / user ${userId}: ${err.message}`,
       );
     }
+  }
+
+  private getDateTruncExpression(interval: ChartInterval): string {
+    const field = interval === ChartInterval.HOURLY ? 'hour' : 'day';
+    return `DATE_TRUNC('${field}', reading.timestamp) as time_bucket`;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Chart Data
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // async verifyDeviceOwnership(deviceId: string, userId: number): Promise<void> {
+  //   const device = await this.devicesService.findDeviceByDeviceId(deviceId);
+
+  //   if (!device) {
+  //     throw new NotFoundException(`Device with ID ${deviceId} not found`);
+  //   }
+
+  //   if (device.userId !== userId) {
+  //     throw new ForbiddenException('You do not have access to this device');
+  //   }
+  // }
+  private async verifyDeviceOwnership(deviceId: string, userId: number): Promise<void> {
+    const device = await this.devicesService.findDeviceByDeviceId(deviceId);
+
+    if (!device) {
+      throw new NotFoundException(`Device with ID ${deviceId} not found`);
+    }
+    if (device.userId !== userId) {
+      throw new ForbiddenException('You do not have access to this device');
+    }
+  }
+  async getChartData(deviceId: string, userId: number, range: ChartRange, interval: ChartInterval) {
+    // Verify device ownership
+    await this.verifyDeviceOwnership(deviceId, userId);
+
+    // Calculate date range
+    const { startDate, endDate } = this.calculateDateRange(range);
+
+    // Aggregate readings
+    const aggregatedData = await this.aggregateReadings(deviceId, startDate, endDate, interval);
+
+    return {
+      deviceId,
+      range,
+      interval,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      data: aggregatedData,
+    };
+  }
+  private async aggregateReadings(
+    deviceId: string,
+    startDate: Date,
+    endDate: Date,
+    interval: ChartInterval,
+  ) {
+    let truncFormat: string;
+
+    switch (interval) {
+      case ChartInterval.HOURLY:
+        truncFormat = 'hour';
+        break;
+      case ChartInterval.DAILY:
+        truncFormat = 'day';
+        break;
+      case ChartInterval.WEEKLY:
+        truncFormat = 'week';
+        break;
+    }
+
+    const query = this.readingRepository
+      .createQueryBuilder('reading')
+      .select(`DATE_TRUNC('${truncFormat}', reading.timestamp)`, 'period')
+      .addSelect('AVG(reading.temperature)', 'avgTemperature')
+      .addSelect('AVG(reading.humidity)', 'avgHumidity')
+      .addSelect('AVG(reading.moisture)', 'avgSoilMoisture')
+      .addSelect('AVG(reading.light)', 'avgLightLevel')
+      .addSelect('COUNT(reading.id)', 'count')
+      .where('reading.deviceId = :deviceId', { deviceId })
+      .andWhere('reading.timestamp BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      })
+      .groupBy('period')
+      .orderBy('period', 'ASC');
+
+    const results = await query.getRawMany();
+
+    return results.map((row) => ({
+      timestamp: row.period,
+      temperature: parseFloat(row.avgTemperature) || null,
+      humidity: parseFloat(row.avgHumidity) || null,
+      soilMoisture: parseFloat(row.avgSoilMoisture) || null,
+      lightLevel: parseFloat(row.avgLightLevel) || null,
+      readingsCount: parseInt(row.count, 10),
+    }));
+  }
+  private calculateDateRange(range: ChartRange): { startDate: Date; endDate: Date } {
+    const endDate = new Date();
+    const startDate = new Date();
+
+    switch (range) {
+      case ChartRange.SEVEN_DAYS:
+        startDate.setDate(endDate.getDate() - 7);
+        break;
+      case ChartRange.THIRTY_DAYS:
+        startDate.setDate(endDate.getDate() - 30);
+        break;
+      case ChartRange.NINETY_DAYS:
+        startDate.setDate(endDate.getDate() - 90);
+        break;
+    }
+
+    return { startDate, endDate };
   }
 }

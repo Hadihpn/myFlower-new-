@@ -7,6 +7,7 @@ import { SensorVerificationService } from '@modules/sensor-verification/sensor-v
 import { ConfigService } from '@nestjs/config';
 import { UserPlantSelectionsService } from '../user-plant-selections/user-plant-selections.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ChartInterval, ChartRange } from './dto/chart-query.dto';
 export declare class SensorReadingsService {
     private readingRepository;
     private devicesService;
@@ -18,7 +19,7 @@ export declare class SensorReadingsService {
     private readonly suddenChangeThresholds;
     constructor(readingRepository: Repository<SensorReading>, devicesService: DevicesService, verificationService: SensorVerificationService, userPlantSelectionsService: UserPlantSelectionsService, notificationsService: NotificationsService, configService: ConfigService);
     createReading(deviceId: string, createReadingDto: CreateSensorReadingDto): Promise<SensorReading>;
-    getDeviceReadings(deviceId: number, queryDto: SensorQueryDto): Promise<SensorReading[]>;
+    getDeviceReadings(deviceId: string, queryDto: SensorQueryDto): Promise<SensorReading[]>;
     getLatestReading(deviceId: string): Promise<SensorReading | null>;
     getAverageReadings(deviceId: number, startDate: Date, endDate: Date): Promise<{
         avgTemperature: number;
@@ -40,4 +41,23 @@ export declare class SensorReadingsService {
     private applyCalibration;
     private checkSuddenChanges;
     private checkPlantThresholds;
+    private getDateTruncExpression;
+    private verifyDeviceOwnership;
+    getChartData(deviceId: string, userId: number, range: ChartRange, interval: ChartInterval): Promise<{
+        deviceId: string;
+        range: ChartRange;
+        interval: ChartInterval;
+        startDate: string;
+        endDate: string;
+        data: {
+            timestamp: any;
+            temperature: number;
+            humidity: number;
+            soilMoisture: number;
+            lightLevel: number;
+            readingsCount: number;
+        }[];
+    }>;
+    private aggregateReadings;
+    private calculateDateRange;
 }
