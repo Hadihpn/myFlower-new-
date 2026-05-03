@@ -70,7 +70,7 @@ export class SensorReadingsService {
 
     // Update device heartbeat
     await this.devicesService.updateLastSeen(deviceId);
-
+console.log("Before threshold")    
     // Post-save checks (fire-and-forget style — errors are caught internally)
     await this.checkPlantThresholds(device.deviceId, device.userId, savedReading);
     await this.checkSuddenChanges(device.id, savedReading);
@@ -281,11 +281,12 @@ export class SensorReadingsService {
     reading: SensorReading,
   ): Promise<void> {
     try {
+      
       const selection = await this.userPlantSelectionsService.getCurrentlyMonitored(
         userId,
         deviceId,
       );
-
+      console.log("selection :",selection)
       if (!selection) return;
 
       // Package thresholds take precedence over species thresholds
@@ -298,6 +299,9 @@ export class SensorReadingsService {
 
       // ── Temperature ────────────────────────────────────────────────────────
       if (thresholds.temperature) {
+        console.log("threshold compare:")
+        console.log(reading.temperature)
+        console.log(thresholds.temperature)
         if (reading.temperature < thresholds.temperature.min) {
           messages.push(
             `Temperature too low: ${reading.temperature}°C ` +
@@ -344,8 +348,9 @@ export class SensorReadingsService {
           messages,
         );
       }
+      console.log("message : ", messages)
     } catch (err) {
-      // Never let alerting crash the main request pipeline
+      // Never let alerting crash the main request se;epipeline
       this.logger.warn(
         `checkPlantThresholds failed for device ${deviceId} / user ${userId}: ${err.message}`,
       );
@@ -402,53 +407,69 @@ export class SensorReadingsService {
     };
   }
   private async aggregateReadings(
-    deviceId: string,
-    startDate: Date,
-    endDate: Date,
-    interval: ChartInterval,
-  ) {
-    let truncFormat: string;
+  deviceId: string,
+  startDate: Date,
+  endDate: Date,
+  interval: ChartInterval,
+): Promise<any[]> {
+  let truncFormat: string;
 
-    switch (interval) {
-      case ChartInterval.HOURLY:
-        truncFormat = 'hour';
-        break;
-      case ChartInterval.DAILY:
-        truncFormat = 'day';
-        break;
-      case ChartInterval.WEEKLY:
-        truncFormat = 'week';
-        break;
-    }
-
-    const query = this.readingRepository
-      .createQueryBuilder('reading')
-      .select(`DATE_TRUNC('${truncFormat}', reading.timestamp)`, 'period')
-      .addSelect('AVG(reading.temperature)', 'avgTemperature')
-      .addSelect('AVG(reading.humidity)', 'avgHumidity')
-      .addSelect('AVG(reading.moisture)', 'avgSoilMoisture')
-      .addSelect('AVG(reading.light)', 'avgLightLevel')
-      .addSelect('COUNT(reading.id)', 'count')
-      .where('reading.deviceId = :deviceId', { deviceId })
-      .andWhere('reading.timestamp BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      })
-      .groupBy('period')
-      .orderBy('period', 'ASC');
-
-    const results = await query.getRawMany();
-
-    return results.map((row) => ({
-      timestamp: row.period,
-      temperature: parseFloat(row.avgTemperature) || null,
-      humidity: parseFloat(row.avgHumidity) || null,
-      soilMoisture: parseFloat(row.avgSoilMoisture) || null,
-      lightLevel: parseFloat(row.avgLightLevel) || null,
-      readingsCount: parseInt(row.count, 10),
-    }));
+  switch (interval) {
+    case ChartInterval.HOURLY:
+      truncFormat = 'hour';
+      break;
+    case ChartInterval.DAILY:
+      truncFormat = 'day';
+      break;
+    case ChartInterval.WEEKLY:
+      truncFormat = 'week';
+      break;
   }
-  private calculateDateRange(range: ChartRange): { startDate: Date; endDate: Date } {
+
+  const results = await this.readingRepository
+    .createQueryBuilder('reading')
+    .select(`DATE_TRUNC('${truncFormat}', reading.timestamp)`, 'timestamp')
+    .addSelect('MIN(reading.temperature)', 'temp_min')
+    .addSelect('MAX(reading.temperature)', 'temp_max')
+    .addSelect('AVG(reading.temperature)', 'temp_avg')
+    .addSelect('MIN(reading.humidity)', 'humidity_min')
+    .addSelect('MAX(reading.humidity)', 'humidity_max')
+    .addSelect('AVG(reading.humidity)', 'humidity_avg')
+    .addSelect('MIN(reading.moisture)', 'soil_min')
+    .addSelect('MAX(reading.moisture)', 'soil_max')
+    .addSelect('AVG(reading.moisture)', 'soil_avg')
+    .where('reading.deviceId = :deviceId', { deviceId })
+    .andWhere('reading.timestamp BETWEEN :startDate AND :endDate', {
+      startDate,
+      endDate,
+    })
+    .groupBy(`DATE_TRUNC('${truncFormat}', reading.timestamp)`)
+    .orderBy('timestamp', 'ASC')
+    .getRawMany();
+
+  return results.map((row) => ({
+    timestamp: row.timestamp,
+    temperature: {
+      min: parseFloat(row.temp_min),
+      max: parseFloat(row.temp_max),
+      avg: parseFloat(row.temp_avg),
+    },
+    humidity: {
+      min: parseFloat(row.humidity_min),
+      max: parseFloat(row.humidity_max),
+      avg: parseFloat(row.humidity_avg),
+    },
+    soilMoisture: {
+      min: parseFloat(row.soil_min),
+      max: parseFloat(row.soil_max),
+      avg: parseFloat(row.soil_avg),
+    },
+  }));
+}
+  private calculateDateRange(range: ChartRange): {
+    startDate: Date;
+    endDate: Date;
+  } {
     const endDate = new Date();
     const startDate = new Date();
 

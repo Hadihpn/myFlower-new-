@@ -36,7 +36,8 @@ let UserPlantSelectionsService = class UserPlantSelectionsService {
         if (device.userId !== userId) {
             throw new common_1.BadRequestException('Device does not belong to user');
         }
-        console.log("first step", device);
+        console.log("Check subscription slot limit");
+        console.log(userId);
         const plantSlotLimit = await this.subscriptionService.checkUserPlantSlotLimit(userId);
         if (plantSlotLimit === 0) {
             throw new common_1.BadRequestException('No active subscription found');
@@ -46,13 +47,10 @@ let UserPlantSelectionsService = class UserPlantSelectionsService {
         });
         let alreadyMonitoring;
         if (packageId) {
-            console.log("device :", device);
             await this.plantsService.findPackageById(packageId);
-            console.log("before alreadyMonitoring :", { userId, device, packageId });
             alreadyMonitoring = await this.selectionRepository.findOne({
                 where: { userId, deviceId: device.deviceId, packageId },
             });
-            console.log("alreadyMonitoring :", alreadyMonitoring);
         }
         else {
             await this.plantsService.findSpeciesById(plantSpeciesId);
@@ -81,7 +79,6 @@ let UserPlantSelectionsService = class UserPlantSelectionsService {
             currentlyMonitoring: true,
             plantedDate: selectionData.plantedDate ? new Date(selectionData.plantedDate) : null,
         });
-        console.log("selection :", selection);
         return this.selectionRepository.save(selection);
     }
     async getUserSelections(userId) {
@@ -109,9 +106,7 @@ let UserPlantSelectionsService = class UserPlantSelectionsService {
         });
     }
     async getCurrentlyMonitored(userId, deviceId) {
-        console.log('Getting currently monitored plant for device:', { userId, deviceId });
         const device = await this.devicesService.findDeviceById(deviceId);
-        console.log('device currently :', device);
         if (device.userId !== userId) {
             throw new common_1.BadRequestException('Device does not belong to user');
         }
@@ -119,7 +114,6 @@ let UserPlantSelectionsService = class UserPlantSelectionsService {
             where: { deviceId, currentlyMonitoring: true, active: true },
             relations: ['user', 'package', 'package.items', 'package.items.plantSpecies', 'plantSpecies'],
         });
-        console.log('result :', result);
         return result;
     }
     async switchMonitoring(userId, deviceId, selectionId) {

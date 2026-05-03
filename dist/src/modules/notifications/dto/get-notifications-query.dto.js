@@ -9,35 +9,40 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateNotificationDto = void 0;
+exports.GetNotificationsQueryDto = void 0;
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
 const notification_entity_1 = require("../entities/notification.entity");
-class CreateNotificationDto {
+class GetNotificationsQueryDto {
+    constructor() {
+        this.page = 1;
+        this.limit = 20;
+    }
 }
-exports.CreateNotificationDto = CreateNotificationDto;
-__decorate([
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], CreateNotificationDto.prototype, "userId", void 0);
+exports.GetNotificationsQueryDto = GetNotificationsQueryDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsUUID)(),
-    __metadata("design:type", String)
-], CreateNotificationDto.prototype, "deviceId", void 0);
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], GetNotificationsQueryDto.prototype, "page", void 0);
 __decorate([
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Type)(() => Number),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
+    (0, class_validator_1.Max)(100),
+    __metadata("design:type", Number)
+], GetNotificationsQueryDto.prototype, "limit", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(notification_entity_1.NotificationType),
     __metadata("design:type", String)
-], CreateNotificationDto.prototype, "type", void 0);
+], GetNotificationsQueryDto.prototype, "type", void 0);
 __decorate([
-    (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CreateNotificationDto.prototype, "message", void 0);
-__decorate([
-    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(notification_entity_1.NotificationSeverity),
     __metadata("design:type", String)
-], CreateNotificationDto.prototype, "severity", void 0);
-//# sourceMappingURL=create-notification.dto.js.map
+], GetNotificationsQueryDto.prototype, "severity", void 0);
+//# sourceMappingURL=get-notifications-query.dto.js.map

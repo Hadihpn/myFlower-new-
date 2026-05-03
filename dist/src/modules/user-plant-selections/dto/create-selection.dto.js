@@ -16,7 +16,7 @@ class CreateSelectionDto {
 }
 exports.CreateSelectionDto = CreateSelectionDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 1 }),
+    (0, swagger_1.ApiProperty)({ example: "DEVICE_12345" }),
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateSelectionDto.prototype, "deviceId", void 0);

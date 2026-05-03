@@ -27,13 +27,10 @@ let DeviceAuthGuard = class DeviceAuthGuard {
         const request = context.switchToHttp().getRequest();
         const deviceId = request.headers['x-device-id'];
         const deviceToken = request.headers['x-device-token'];
-        console.log('deviceId :', deviceId);
-        console.log('deviceToken :', deviceToken);
         if (!deviceId || !deviceToken) {
             throw new common_1.UnauthorizedException('Device credentials required');
         }
         const hashedToken = await hash_util_1.HashUtil.hash(deviceToken);
-        console.log("hashedToken", hashedToken);
         const device = await this.deviceRepository
             .createQueryBuilder('device')
             .addSelect('device.tokenHash')
@@ -43,11 +40,6 @@ let DeviceAuthGuard = class DeviceAuthGuard {
         if (!device) {
             throw new common_1.UnauthorizedException('Device not found');
         }
-        console.log('deviceToken', deviceToken);
-        console.log('hashedToken');
-        console.log('hashedToken', hashedToken);
-        console.log('device.tokenHah', device.tokenHash);
-        console.log('deviceT', device);
         const isValidToken = await bcrypt.compare(deviceToken, device.tokenHash);
         if (!isValidToken) {
             throw new common_1.UnauthorizedException('Invalid device token');

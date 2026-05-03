@@ -49,14 +49,7 @@ export declare class SensorReadingsService {
         interval: ChartInterval;
         startDate: string;
         endDate: string;
-        data: {
-            timestamp: any;
-            temperature: number;
-            humidity: number;
-            soilMoisture: number;
-            lightLevel: number;
-            readingsCount: number;
-        }[];
+        data: any[];
     }>;
     private aggregateReadings;
     private calculateDateRange;

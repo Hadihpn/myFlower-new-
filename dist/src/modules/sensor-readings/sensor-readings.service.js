@@ -56,6 +56,7 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
         });
         const savedReading = await this.readingRepository.save(reading);
         await this.devicesService.updateLastSeen(deviceId);
+        console.log("Before threshold");
         await this.checkPlantThresholds(device.deviceId, device.userId, savedReading);
         await this.checkSuddenChanges(device.id, savedReading);
         return savedReading;
@@ -179,6 +180,7 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
     async checkPlantThresholds(deviceId, userId, reading) {
         try {
             const selection = await this.userPlantSelectionsService.getCurrentlyMonitored(userId, deviceId);
+            console.log("selection :", selection);
             if (!selection)
                 return;
             const thresholds = selection.package?.thresholds ?? selection.plantSpecies?.thresholds ?? null;
@@ -186,6 +188,9 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
                 return;
             const messages = [];
             if (thresholds.temperature) {
+                console.log("threshold compare:");
+                console.log(reading.temperature);
+                console.log(thresholds.temperature);
                 if (reading.temperature < thresholds.temperature.min) {
                     messages.push(`Temperature too low: ${reading.temperature}°C ` +
                         `(min ${thresholds.temperature.min}°C)`);
@@ -214,6 +219,7 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
             if (messages.length > 0 && selection.user?.email) {
                 await this.notificationsService.sendThresholdAlert(selection.user.email, selection.user.fullName ?? selection.user.email, messages);
             }
+            console.log("message : ", messages);
         }
         catch (err) {
             this.logger.warn(`checkPlantThresholds failed for device ${deviceId} / user ${userId}: ${err.message}`);
@@ -258,29 +264,43 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
                 truncFormat = 'week';
                 break;
         }
-        const query = this.readingRepository
+        const results = await this.readingRepository
             .createQueryBuilder('reading')
-            .select(`DATE_TRUNC('${truncFormat}', reading.timestamp)`, 'period')
-            .addSelect('AVG(reading.temperature)', 'avgTemperature')
-            .addSelect('AVG(reading.humidity)', 'avgHumidity')
-            .addSelect('AVG(reading.moisture)', 'avgSoilMoisture')
-            .addSelect('AVG(reading.light)', 'avgLightLevel')
-            .addSelect('COUNT(reading.id)', 'count')
+            .select(`DATE_TRUNC('${truncFormat}', reading.timestamp)`, 'timestamp')
+            .addSelect('MIN(reading.temperature)', 'temp_min')
+            .addSelect('MAX(reading.temperature)', 'temp_max')
+            .addSelect('AVG(reading.temperature)', 'temp_avg')
+            .addSelect('MIN(reading.humidity)', 'humidity_min')
+            .addSelect('MAX(reading.humidity)', 'humidity_max')
+            .addSelect('AVG(reading.humidity)', 'humidity_avg')
+            .addSelect('MIN(reading.moisture)', 'soil_min')
+            .addSelect('MAX(reading.moisture)', 'soil_max')
+            .addSelect('AVG(reading.moisture)', 'soil_avg')
             .where('reading.deviceId = :deviceId', { deviceId })
             .andWhere('reading.timestamp BETWEEN :startDate AND :endDate', {
             startDate,
             endDate,
         })
-            .groupBy('period')
-            .orderBy('period', 'ASC');
-        const results = await query.getRawMany();
+            .groupBy(`DATE_TRUNC('${truncFormat}', reading.timestamp)`)
+            .orderBy('timestamp', 'ASC')
+            .getRawMany();
         return results.map((row) => ({
-            timestamp: row.period,
-            temperature: parseFloat(row.avgTemperature) || null,
-            humidity: parseFloat(row.avgHumidity) || null,
-            soilMoisture: parseFloat(row.avgSoilMoisture) || null,
-            lightLevel: parseFloat(row.avgLightLevel) || null,
-            readingsCount: parseInt(row.count, 10),
+            timestamp: row.timestamp,
+            temperature: {
+                min: parseFloat(row.temp_min),
+                max: parseFloat(row.temp_max),
+                avg: parseFloat(row.temp_avg),
+            },
+            humidity: {
+                min: parseFloat(row.humidity_min),
+                max: parseFloat(row.humidity_max),
+                avg: parseFloat(row.humidity_avg),
+            },
+            soilMoisture: {
+                min: parseFloat(row.soil_min),
+                max: parseFloat(row.soil_max),
+                avg: parseFloat(row.soil_avg),
+            },
         }));
     }
     calculateDateRange(range) {

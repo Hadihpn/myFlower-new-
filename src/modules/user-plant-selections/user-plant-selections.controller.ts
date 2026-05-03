@@ -36,7 +36,6 @@ export class UserPlantSelectionsController {
     @CurrentUser('id') userId: number,
     @Body() createSelectionDto: CreateSelectionDto,
   ) {
-    console.log("deviceID :",createSelectionDto.deviceId);
     
     return this.selectionsService.createSelection(userId, createSelectionDto);
   }

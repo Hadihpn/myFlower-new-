@@ -10,7 +10,7 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSelectionDto {
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: "DEVICE_12345" })
   @IsNotEmpty()
   deviceId: string;
 

@@ -22,19 +22,21 @@ const fs = require("fs");
 const path = require("path");
 const handlebars = require("handlebars");
 const notification_settings_entity_1 = require("./entities/notification-settings.entity");
+const notification_entity_1 = require("./entities/notification.entity");
 const devices_service_1 = require("../devices/devices.service");
 let NotificationsService = class NotificationsService {
-    constructor(configService, devicesService, settingsRepository) {
+    constructor(configService, devicesService, settingsRepository, notificationRepository) {
         this.configService = configService;
         this.devicesService = devicesService;
         this.settingsRepository = settingsRepository;
+        this.notificationRepository = notificationRepository;
         this.transporter = nodemailer.createTransport({
-            host: this.configService.get('email.host'),
-            port: this.configService.get('email.port'),
-            secure: this.configService.get('email.secure', false),
+            host: "smtp.c1.liara.email",
+            port: 587,
+            secure: false,
             auth: {
-                user: this.configService.get('email.user'),
-                pass: this.configService.get('email.pass'),
+                user: "loving_kowalevski_okuhtc",
+                pass: "03d80178-0b6f-417c-aed2-e039ce166330",
             },
         });
     }
@@ -72,8 +74,9 @@ let NotificationsService = class NotificationsService {
     async sendEmail(to, subject, html) {
         try {
             console.log('sendemail', { to, subject, html });
+            console.log('from email', this.configService.get('email.from'));
             await this.transporter.sendMail({
-                from: this.configService.get('email.from'),
+                from: process.env.EMAIL_FROM,
                 to,
                 subject,
                 html,
@@ -150,13 +153,108 @@ let NotificationsService = class NotificationsService {
         });
         await this.sendEmail(email, 'Unsuitable condition', html);
     }
+    async createNotification(dto) {
+        const notification = this.notificationRepository.create({
+            userId: dto.userId,
+            deviceId: dto.deviceId || null,
+            type: dto.type,
+            message: dto.message,
+            severity: dto.severity,
+            isRead: false,
+            readAt: null,
+        });
+        return await this.notificationRepository.save(notification);
+    }
+    async getNotifications(userId, query) {
+        const { page = 1, limit = 20, type, severity } = query;
+        const skip = (page - 1) * limit;
+        const queryBuilder = this.notificationRepository
+            .createQueryBuilder('notification')
+            .where('notification.userId = :userId', { userId })
+            .orderBy('notification.createdAt', 'DESC')
+            .skip(skip)
+            .take(limit);
+        if (type) {
+            queryBuilder.andWhere('notification.type = :type', { type });
+        }
+        if (severity) {
+            queryBuilder.andWhere('notification.severity = :severity', { severity });
+        }
+        const [notifications, total] = await queryBuilder.getManyAndCount();
+        return {
+            data: notifications.map(this.toResponseDto),
+            total,
+            page,
+            limit,
+        };
+    }
+    async getUnreadCount(userId) {
+        return await this.notificationRepository.count({
+            where: { userId, isRead: false },
+        });
+    }
+    async getUnreadNotifications(userId) {
+        const notifications = await this.notificationRepository.find({
+            where: { userId, isRead: false },
+            order: { createdAt: 'DESC' },
+            take: 50,
+        });
+        return notifications.map(this.toResponseDto);
+    }
+    async markAsRead(userId, notificationId) {
+        const notification = await this.notificationRepository.findOne({
+            where: { id: notificationId, userId },
+        });
+        if (!notification) {
+            throw new common_1.NotFoundException('Notification not found');
+        }
+        if (!notification.isRead) {
+            notification.isRead = true;
+            notification.readAt = new Date();
+            await this.notificationRepository.save(notification);
+        }
+        return this.toResponseDto(notification);
+    }
+    async markAllAsRead(userId) {
+        const result = await this.notificationRepository
+            .createQueryBuilder()
+            .update(notification_entity_1.Notification)
+            .set({ isRead: true, readAt: new Date() })
+            .where('userId = :userId AND isRead = false', { userId })
+            .execute();
+        return { affected: result.affected || 0 };
+    }
+    async deleteNotification(userId, notificationId) {
+        const result = await this.notificationRepository.delete({
+            id: notificationId,
+            userId,
+        });
+        if (result.affected === 0) {
+            throw new common_1.NotFoundException('Notification not found');
+        }
+    }
+    toResponseDto(notification) {
+        return {
+            id: notification.id,
+            userId: notification.userId,
+            deviceId: notification.deviceId,
+            type: notification.type,
+            message: notification.message,
+            severity: notification.severity,
+            isRead: notification.isRead,
+            readAt: notification.readAt,
+            createdAt: notification.createdAt,
+        };
+    }
 };
 exports.NotificationsService = NotificationsService;
 exports.NotificationsService = NotificationsService = __decorate([
     (0, common_1.Injectable)(),
     __param(2, (0, typeorm_1.InjectRepository)(notification_settings_entity_1.NotificationSettings)),
+    __param(3, (0, typeorm_1.InjectRepository)(notification_entity_1.Notification)),
     __metadata("design:paramtypes", [config_1.ConfigService,
         devices_service_1.DevicesService,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], NotificationsService);
 //# sourceMappingURL=notifications.service.js.map

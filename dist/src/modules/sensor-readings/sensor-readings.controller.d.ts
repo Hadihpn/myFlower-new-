@@ -25,13 +25,6 @@ export declare class SensorReadingsController {
         interval: ChartInterval;
         startDate: string;
         endDate: string;
-        data: {
-            timestamp: any;
-            temperature: number;
-            humidity: number;
-            soilMoisture: number;
-            lightLevel: number;
-            readingsCount: number;
-        }[];
+        data: any[];
     }>;
 }

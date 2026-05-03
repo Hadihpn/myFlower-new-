@@ -25,7 +25,6 @@ let UserPlantSelectionsController = class UserPlantSelectionsController {
         this.selectionsService = selectionsService;
     }
     createSelection(userId, createSelectionDto) {
-        console.log("deviceID :", createSelectionDto.deviceId);
         return this.selectionsService.createSelection(userId, createSelectionDto);
     }
     getUserSelections(userId) {
