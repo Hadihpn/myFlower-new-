@@ -53,4 +53,6 @@ export declare class SensorReadingsService {
     }>;
     private aggregateReadings;
     private calculateDateRange;
+    getFirstReading(deviceId: string): Promise<SensorReading | null>;
+    getReadingsForDevice(deviceId: string, days?: number): Promise<SensorReading[]>;
 }

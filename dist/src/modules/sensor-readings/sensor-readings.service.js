@@ -56,13 +56,13 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
         });
         const savedReading = await this.readingRepository.save(reading);
         await this.devicesService.updateLastSeen(deviceId);
-        console.log("Before threshold");
+        console.log('Before threshold');
         await this.checkPlantThresholds(device.deviceId, device.userId, savedReading);
         await this.checkSuddenChanges(device.id, savedReading);
         return savedReading;
     }
     async getDeviceReadings(deviceId, queryDto) {
-        const { startDate, endDate, limit = 100 } = queryDto;
+        const { startDate, endDate, limit = 10000 } = queryDto;
         const query = this.readingRepository
             .createQueryBuilder('reading')
             .where('reading.deviceId = :deviceId', { deviceId })
@@ -180,7 +180,7 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
     async checkPlantThresholds(deviceId, userId, reading) {
         try {
             const selection = await this.userPlantSelectionsService.getCurrentlyMonitored(userId, deviceId);
-            console.log("selection :", selection);
+            console.log('selection :', selection);
             if (!selection)
                 return;
             const thresholds = selection.package?.thresholds ?? selection.plantSpecies?.thresholds ?? null;
@@ -188,7 +188,7 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
                 return;
             const messages = [];
             if (thresholds.temperature) {
-                console.log("threshold compare:");
+                console.log('threshold compare:');
                 console.log(reading.temperature);
                 console.log(thresholds.temperature);
                 if (reading.temperature < thresholds.temperature.min) {
@@ -219,7 +219,7 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
             if (messages.length > 0 && selection.user?.email) {
                 await this.notificationsService.sendThresholdAlert(selection.user.email, selection.user.fullName ?? selection.user.email, messages);
             }
-            console.log("message : ", messages);
+            console.log('message : ', messages);
         }
         catch (err) {
             this.logger.warn(`checkPlantThresholds failed for device ${deviceId} / user ${userId}: ${err.message}`);
@@ -318,6 +318,26 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
                 break;
         }
         return { startDate, endDate };
+    }
+    async getFirstReading(deviceId) {
+        return this.readingRepository.findOne({
+            where: { deviceId },
+            order: { timestamp: 'ASC' },
+            relations: ['device'],
+        });
+    }
+    async getReadingsForDevice(deviceId, days = 7) {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+        return this.readingRepository.find({
+            where: {
+                deviceId,
+                timestamp: (0, typeorm_2.MoreThanOrEqual)(startDate),
+            },
+            order: {
+                timestamp: 'DESC',
+            },
+        });
     }
 };
 exports.SensorReadingsService = SensorReadingsService;

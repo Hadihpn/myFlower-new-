@@ -7,8 +7,7 @@ export class CreateNotificationDto {
   userId: number;
 
   @IsOptional()
-  @IsUUID()
-  deviceId?: string | null;
+  deviceId?: number;
 
   @IsNotEmpty()
   @IsEnum(NotificationType)

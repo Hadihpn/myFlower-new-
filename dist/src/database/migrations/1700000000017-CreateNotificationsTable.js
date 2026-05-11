@@ -21,13 +21,19 @@ class CreateNotificationsTable1700000000017 {
                 },
                 {
                     name: 'deviceId',
-                    type: 'uuid',
+                    type: 'int',
                     isNullable: true,
                 },
                 {
                     name: 'type',
                     type: 'enum',
                     enum: ['threshold_alert', 'sudden_change', 'device_offline', 'system'],
+                    isNullable: false,
+                },
+                {
+                    name: 'title',
+                    type: 'varchar',
+                    length: '255',
                     isNullable: false,
                 },
                 {
@@ -41,6 +47,11 @@ class CreateNotificationsTable1700000000017 {
                     enum: ['info', 'warning', 'critical'],
                     default: "'info'",
                     isNullable: false,
+                },
+                {
+                    name: 'metadata',
+                    type: 'jsonb',
+                    isNullable: true,
                 },
                 {
                     name: 'isRead',
@@ -70,8 +81,8 @@ class CreateNotificationsTable1700000000017 {
             columnNames: ['userId', 'createdAt'],
         }));
         await queryRunner.createIndex('notifications', new typeorm_1.TableIndex({
-            name: 'IDX_notifications_userId',
-            columnNames: ['userId'],
+            name: 'IDX_notifications_deviceId',
+            columnNames: ['deviceId'],
         }));
         await queryRunner.createForeignKey('notifications', new typeorm_1.TableForeignKey({
             columnNames: ['userId'],
@@ -87,6 +98,15 @@ class CreateNotificationsTable1700000000017 {
         }));
     }
     async down(queryRunner) {
+        const table = await queryRunner.getTable('notifications');
+        if (table) {
+            const userFk = table.foreignKeys.find(fk => fk.columnNames.indexOf('userId') !== -1);
+            const deviceFk = table.foreignKeys.find(fk => fk.columnNames.indexOf('deviceId') !== -1);
+            if (userFk)
+                await queryRunner.dropForeignKey('notifications', userFk);
+            if (deviceFk)
+                await queryRunner.dropForeignKey('notifications', deviceFk);
+        }
         await queryRunner.dropTable('notifications');
     }
 }

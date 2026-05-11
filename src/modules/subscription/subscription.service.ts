@@ -169,7 +169,7 @@ async getUserSubscription(userId: number): Promise<UserSubscription | null> {
 
   async checkUserPlantSlotLimit(userId: number): Promise<number> {
     const activeSubscription = await this.getUserActiveSubscription(userId);
-
+    
     if (!activeSubscription) {
       return 0; // No subscription, no slots
     }

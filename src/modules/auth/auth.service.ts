@@ -11,7 +11,7 @@ import { Repository } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { AuthResponse } from './interfaces/auth-response.interface';
+import { AuthRegisterResponse, AuthResponse } from './interfaces/auth-response.interface';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { HashUtil } from '@common/utils/hash.util';
 import { User } from '../users/entities/user.entity';
@@ -27,7 +27,7 @@ export class AuthService {
     private notificationsService: NotificationsService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<AuthResponse> {
+  async register(registerDto: RegisterDto): Promise<AuthRegisterResponse> {
     const { email, password, fullName, phoneNumber } = registerDto;
 
     // Check if user already exists
@@ -49,14 +49,15 @@ export class AuthService {
       phoneNumber,
     });
 
-    await this.userRepository.save(user);
+    const newUser = await this.userRepository.save(user);
     await this.notificationsService.sendWelcomeEmail(user.email, user.fullName);
-    // Generate tokens
-    return this.generateTokens(user);
+
+    return { user: { email: user.email, fullName: user.fullName, role: user.role } };
   }
 
   async login(loginDto: LoginDto): Promise<AuthResponse> {
     const { email, password } = loginDto;
+
     // Find user
     const user = await this.userRepository
       .createQueryBuilder('user')

@@ -93,6 +93,7 @@ async function bootstrap() {
     .addTag('Advice', 'Plant care advice')
     .addTag('User Actions', 'User care actions logging')
     .addTag('Admin', 'Admin panel')
+    .addTag('ََCare Schedules', 'Care Schedules panel')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

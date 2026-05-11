@@ -43,9 +43,9 @@ let AuthService = class AuthService {
             fullName,
             phoneNumber,
         });
-        await this.userRepository.save(user);
+        const newUser = await this.userRepository.save(user);
         await this.notificationsService.sendWelcomeEmail(user.email, user.fullName);
-        return this.generateTokens(user);
+        return { user: { email: user.email, fullName: user.fullName, role: user.role } };
     }
     async login(loginDto) {
         const { email, password } = loginDto;

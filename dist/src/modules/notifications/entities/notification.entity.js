@@ -44,8 +44,8 @@ __decorate([
     __metadata("design:type", user_entity_1.User)
 ], Notification.prototype, "user", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'uuid', nullable: true }),
-    __metadata("design:type", String)
+    (0, typeorm_1.Column)({ type: 'int', nullable: true }),
+    __metadata("design:type", Number)
 ], Notification.prototype, "deviceId", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => device_entity_1.Device, { onDelete: 'SET NULL', nullable: true }),

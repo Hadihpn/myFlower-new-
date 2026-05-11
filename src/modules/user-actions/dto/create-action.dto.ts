@@ -7,7 +7,10 @@ export class CreateActionDto {
   @IsInt()
   @IsNotEmpty()
   selectionId: number;
-
+  @ApiPropertyOptional({ example: 'Device_Id' })
+  @IsNotEmpty()
+  @IsString()
+  deviceId: string;
   @ApiProperty({ enum: ActionType })
   @IsEnum(ActionType)
   actionType: ActionType;

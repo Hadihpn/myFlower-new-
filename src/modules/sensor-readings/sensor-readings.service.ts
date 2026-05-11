@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, Logger, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { SensorReading } from './entities/sensor-reading.entity';
 import { CreateSensorReadingDto } from './dto/create-sensor-reading.dto';
 import { SensorQueryDto } from './dto/sensor-query.dto';
@@ -70,7 +70,7 @@ export class SensorReadingsService {
 
     // Update device heartbeat
     await this.devicesService.updateLastSeen(deviceId);
-console.log("Before threshold")    
+    console.log('Before threshold');
     // Post-save checks (fire-and-forget style — errors are caught internally)
     await this.checkPlantThresholds(device.deviceId, device.userId, savedReading);
     await this.checkSuddenChanges(device.id, savedReading);
@@ -79,7 +79,7 @@ console.log("Before threshold")
   }
 
   async getDeviceReadings(deviceId: string, queryDto: SensorQueryDto): Promise<SensorReading[]> {
-    const { startDate, endDate, limit = 100 } = queryDto;
+    const { startDate, endDate, limit = 10000 } = queryDto;
 
     const query = this.readingRepository
       .createQueryBuilder('reading')
@@ -281,12 +281,11 @@ console.log("Before threshold")
     reading: SensorReading,
   ): Promise<void> {
     try {
-      
       const selection = await this.userPlantSelectionsService.getCurrentlyMonitored(
         userId,
         deviceId,
       );
-      console.log("selection :",selection)
+      console.log('selection :', selection);
       if (!selection) return;
 
       // Package thresholds take precedence over species thresholds
@@ -299,9 +298,9 @@ console.log("Before threshold")
 
       // ── Temperature ────────────────────────────────────────────────────────
       if (thresholds.temperature) {
-        console.log("threshold compare:")
-        console.log(reading.temperature)
-        console.log(thresholds.temperature)
+        console.log('threshold compare:');
+        console.log(reading.temperature);
+        console.log(thresholds.temperature);
         if (reading.temperature < thresholds.temperature.min) {
           messages.push(
             `Temperature too low: ${reading.temperature}°C ` +
@@ -348,7 +347,7 @@ console.log("Before threshold")
           messages,
         );
       }
-      console.log("message : ", messages)
+      console.log('message : ', messages);
     } catch (err) {
       // Never let alerting crash the main request se;epipeline
       this.logger.warn(
@@ -407,65 +406,65 @@ console.log("Before threshold")
     };
   }
   private async aggregateReadings(
-  deviceId: string,
-  startDate: Date,
-  endDate: Date,
-  interval: ChartInterval,
-): Promise<any[]> {
-  let truncFormat: string;
+    deviceId: string,
+    startDate: Date,
+    endDate: Date,
+    interval: ChartInterval,
+  ): Promise<any[]> {
+    let truncFormat: string;
 
-  switch (interval) {
-    case ChartInterval.HOURLY:
-      truncFormat = 'hour';
-      break;
-    case ChartInterval.DAILY:
-      truncFormat = 'day';
-      break;
-    case ChartInterval.WEEKLY:
-      truncFormat = 'week';
-      break;
+    switch (interval) {
+      case ChartInterval.HOURLY:
+        truncFormat = 'hour';
+        break;
+      case ChartInterval.DAILY:
+        truncFormat = 'day';
+        break;
+      case ChartInterval.WEEKLY:
+        truncFormat = 'week';
+        break;
+    }
+
+    const results = await this.readingRepository
+      .createQueryBuilder('reading')
+      .select(`DATE_TRUNC('${truncFormat}', reading.timestamp)`, 'timestamp')
+      .addSelect('MIN(reading.temperature)', 'temp_min')
+      .addSelect('MAX(reading.temperature)', 'temp_max')
+      .addSelect('AVG(reading.temperature)', 'temp_avg')
+      .addSelect('MIN(reading.humidity)', 'humidity_min')
+      .addSelect('MAX(reading.humidity)', 'humidity_max')
+      .addSelect('AVG(reading.humidity)', 'humidity_avg')
+      .addSelect('MIN(reading.moisture)', 'soil_min')
+      .addSelect('MAX(reading.moisture)', 'soil_max')
+      .addSelect('AVG(reading.moisture)', 'soil_avg')
+      .where('reading.deviceId = :deviceId', { deviceId })
+      .andWhere('reading.timestamp BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      })
+      .groupBy(`DATE_TRUNC('${truncFormat}', reading.timestamp)`)
+      .orderBy('timestamp', 'ASC')
+      .getRawMany();
+
+    return results.map((row) => ({
+      timestamp: row.timestamp,
+      temperature: {
+        min: parseFloat(row.temp_min),
+        max: parseFloat(row.temp_max),
+        avg: parseFloat(row.temp_avg),
+      },
+      humidity: {
+        min: parseFloat(row.humidity_min),
+        max: parseFloat(row.humidity_max),
+        avg: parseFloat(row.humidity_avg),
+      },
+      soilMoisture: {
+        min: parseFloat(row.soil_min),
+        max: parseFloat(row.soil_max),
+        avg: parseFloat(row.soil_avg),
+      },
+    }));
   }
-
-  const results = await this.readingRepository
-    .createQueryBuilder('reading')
-    .select(`DATE_TRUNC('${truncFormat}', reading.timestamp)`, 'timestamp')
-    .addSelect('MIN(reading.temperature)', 'temp_min')
-    .addSelect('MAX(reading.temperature)', 'temp_max')
-    .addSelect('AVG(reading.temperature)', 'temp_avg')
-    .addSelect('MIN(reading.humidity)', 'humidity_min')
-    .addSelect('MAX(reading.humidity)', 'humidity_max')
-    .addSelect('AVG(reading.humidity)', 'humidity_avg')
-    .addSelect('MIN(reading.moisture)', 'soil_min')
-    .addSelect('MAX(reading.moisture)', 'soil_max')
-    .addSelect('AVG(reading.moisture)', 'soil_avg')
-    .where('reading.deviceId = :deviceId', { deviceId })
-    .andWhere('reading.timestamp BETWEEN :startDate AND :endDate', {
-      startDate,
-      endDate,
-    })
-    .groupBy(`DATE_TRUNC('${truncFormat}', reading.timestamp)`)
-    .orderBy('timestamp', 'ASC')
-    .getRawMany();
-
-  return results.map((row) => ({
-    timestamp: row.timestamp,
-    temperature: {
-      min: parseFloat(row.temp_min),
-      max: parseFloat(row.temp_max),
-      avg: parseFloat(row.temp_avg),
-    },
-    humidity: {
-      min: parseFloat(row.humidity_min),
-      max: parseFloat(row.humidity_max),
-      avg: parseFloat(row.humidity_avg),
-    },
-    soilMoisture: {
-      min: parseFloat(row.soil_min),
-      max: parseFloat(row.soil_max),
-      avg: parseFloat(row.soil_avg),
-    },
-  }));
-}
   private calculateDateRange(range: ChartRange): {
     startDate: Date;
     endDate: Date;
@@ -486,5 +485,26 @@ console.log("Before threshold")
     }
 
     return { startDate, endDate };
+  }
+  async getFirstReading(deviceId: string): Promise<SensorReading | null> {
+    return this.readingRepository.findOne({
+      where: { deviceId },
+      order: { timestamp: 'ASC' },
+      relations: ['device'],
+    });
+  }
+  async getReadingsForDevice(deviceId: string, days: number = 7): Promise<SensorReading[]> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    return this.readingRepository.find({
+      where: {
+        deviceId,
+        timestamp: MoreThanOrEqual(startDate),
+      },
+      order: {
+        timestamp: 'DESC',
+      },
+    });
   }
 }

@@ -32,6 +32,7 @@ const daily_summary_module_1 = require("./modules/daily-summary/daily-summary.mo
 const throttler_2 = require("@nestjs/throttler");
 const jwt_auth_guard_1 = require("./common/guards/jwt-auth.guard");
 const cache_manager_1 = require("@nestjs/cache-manager");
+const care_schedule_module_1 = require("./modules/careSchedules/care-schedule.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -86,6 +87,7 @@ exports.AppModule = AppModule = __decorate([
             notifications_module_1.NotificationsModule,
             admin_module_1.AdminModule,
             daily_summary_module_1.DailySummaryModule,
+            care_schedule_module_1.CareScheduleModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [

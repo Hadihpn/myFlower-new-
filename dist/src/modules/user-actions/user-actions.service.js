@@ -17,16 +17,26 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_action_entity_1 = require("./entities/user-action.entity");
+const devices_service_1 = require("../devices/devices.service");
 let UserActionsService = class UserActionsService {
-    constructor(actionRepository) {
+    constructor(actionRepository, devicesService) {
         this.actionRepository = actionRepository;
+        this.devicesService = devicesService;
     }
     async createAction(userId, createActionDto) {
-        const { selectionId, ...actionData } = createActionDto;
+        console.log('userId');
+        console.log(userId);
+        console.log('createActionDto');
+        console.log(createActionDto);
+        const { selectionId, deviceId, ...actionData } = createActionDto;
+        const userDevices = await this.devicesService.findUserDevices(userId);
+        let userDevice = userDevices.find((device) => device.deviceId == deviceId);
+        if (!userDevice)
+            throw new common_1.ForbiddenException('send data only for your devices');
         const action = this.actionRepository.create({
             userId,
             selectionId,
-            deviceId: 0,
+            deviceId: userDevice.id,
             ...actionData,
             actionDate: actionData.actionDate ? new Date(actionData.actionDate) : new Date(),
         });
@@ -58,6 +68,7 @@ exports.UserActionsService = UserActionsService;
 exports.UserActionsService = UserActionsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_action_entity_1.UserAction)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        devices_service_1.DevicesService])
 ], UserActionsService);
 //# sourceMappingURL=user-actions.service.js.map

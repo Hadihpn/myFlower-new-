@@ -38,9 +38,9 @@ export class Notification {
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
-
-  @Column({ type: 'uuid', nullable: true })
-  deviceId: string | null;
+  //its had relation to id of device not deviceId
+  @Column({ type: 'int', nullable: true })
+  deviceId: number;
 
   @ManyToOne(() => Device, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'deviceId' })

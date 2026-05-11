@@ -2,7 +2,7 @@ import { NotificationType, NotificationSeverity } from '../entities/notification
 export declare class NotificationResponseDto {
     id: string;
     userId: number;
-    deviceId: string | null;
+    deviceId: number | null;
     type: NotificationType;
     message: string;
     severity: NotificationSeverity;

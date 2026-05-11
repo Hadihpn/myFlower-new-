@@ -15,7 +15,7 @@ export declare class Notification {
     id: string;
     userId: number;
     user: User;
-    deviceId: string | null;
+    deviceId: number;
     device: Device | null;
     type: NotificationType;
     message: string;

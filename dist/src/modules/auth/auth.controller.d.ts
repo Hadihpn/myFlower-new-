@@ -6,7 +6,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
-    register(registerDto: RegisterDto): Promise<import("./interfaces/auth-response.interface").AuthResponse>;
+    register(registerDto: RegisterDto): Promise<import("./interfaces/auth-response.interface").AuthRegisterResponse>;
     login(loginDto: LoginDto): Promise<import("./interfaces/auth-response.interface").AuthResponse>;
     refresh(refreshTokenDto: RefreshTokenDto): Promise<import("./interfaces/auth-response.interface").AuthResponse>;
     changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<{

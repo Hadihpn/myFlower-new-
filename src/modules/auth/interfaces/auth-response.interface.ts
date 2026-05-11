@@ -8,3 +8,10 @@ export interface AuthResponse {
     role: string;
   };
 }
+export interface AuthRegisterResponse {
+  user: {
+    email: string;
+    fullName: string;
+    role: string;
+  };
+}

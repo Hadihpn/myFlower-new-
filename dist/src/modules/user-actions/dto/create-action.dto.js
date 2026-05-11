@@ -23,6 +23,12 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateActionDto.prototype, "selectionId", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 'Device_Id' }),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateActionDto.prototype, "deviceId", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ enum: action_type_enum_1.ActionType }),
     (0, class_validator_1.IsEnum)(action_type_enum_1.ActionType),
     __metadata("design:type", String)

@@ -1,24 +1,32 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { UserAction } from './entities/user-action.entity';
 import { CreateActionDto } from './dto/create-action.dto';
 import { ActionType } from './types/action-type.enum';
+import { DevicesService } from '../devices/devices.service';
 
 @Injectable()
 export class UserActionsService {
   constructor(
     @InjectRepository(UserAction)
     private actionRepository: Repository<UserAction>,
+    private devicesService: DevicesService,
   ) {}
 
   async createAction(userId: number, createActionDto: CreateActionDto): Promise<UserAction> {
-    const { selectionId, ...actionData } = createActionDto;
-
+    console.log('userId');
+    console.log(userId);
+    console.log('createActionDto');
+    console.log(createActionDto);
+    const { selectionId, deviceId, ...actionData } = createActionDto;
+    const userDevices = await this.devicesService.findUserDevices(userId);
+    let userDevice = userDevices.find((device) => device.deviceId == deviceId);
+    if (!userDevice) throw new ForbiddenException('send data only for your devices');
     const action = this.actionRepository.create({
       userId,
       selectionId,
-      deviceId: 0, // Will be set from selection
+      deviceId: userDevice.id, // Will be set from selection
       ...actionData,
       actionDate: actionData.actionDate ? new Date(actionData.actionDate) : new Date(),
     });

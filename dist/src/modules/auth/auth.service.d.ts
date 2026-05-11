@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { AuthResponse } from './interfaces/auth-response.interface';
+import { AuthRegisterResponse, AuthResponse } from './interfaces/auth-response.interface';
 import { User } from '../users/entities/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 export declare class AuthService {
@@ -13,7 +13,7 @@ export declare class AuthService {
     private configService;
     private notificationsService;
     constructor(userRepository: Repository<User>, jwtService: JwtService, configService: ConfigService, notificationsService: NotificationsService);
-    register(registerDto: RegisterDto): Promise<AuthResponse>;
+    register(registerDto: RegisterDto): Promise<AuthRegisterResponse>;
     login(loginDto: LoginDto): Promise<AuthResponse>;
     refreshToken(refreshToken: string): Promise<AuthResponse>;
     changePassword(userId: number, changePasswordDto: ChangePasswordDto): Promise<{

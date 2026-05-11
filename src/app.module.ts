@@ -27,6 +27,7 @@ import { DailySummaryModule } from './modules/daily-summary/daily-summary.module
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { CacheModule } from '@nestjs/cache-manager';
+import { CareScheduleModule } from './modules/careSchedules/care-schedule.module';
 
 @Module({
   imports: [
@@ -85,6 +86,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     NotificationsModule,
     AdminModule,
     DailySummaryModule,
+    CareScheduleModule
   ],
   controllers: [AppController],
   providers: [
