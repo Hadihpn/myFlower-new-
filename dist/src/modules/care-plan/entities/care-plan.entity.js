@@ -9,76 +9,71 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CarePlan = exports.CarePlanStatus = void 0;
+exports.CarePlan = void 0;
+const user_plant_selection_entity_1 = require("../../user-plant-selections/entities/user-plant-selection.entity");
 const typeorm_1 = require("typeorm");
-var CarePlanStatus;
-(function (CarePlanStatus) {
-    CarePlanStatus["ACTIVE"] = "active";
-    CarePlanStatus["REPLACED"] = "replaced";
-    CarePlanStatus["ARCHIVED"] = "archived";
-})(CarePlanStatus || (exports.CarePlanStatus = CarePlanStatus = {}));
+const carePlanStatus_enum_1 = require("../enums/carePlanStatus.enum");
+const generatorType_enum_1 = require("../enums/generatorType.enum");
+const care_task_entity_1 = require("../../care-task/entities/care-task.entity");
 let CarePlan = class CarePlan {
 };
 exports.CarePlan = CarePlan;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
 ], CarePlan.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'int', name: 'user_id' }),
+    (0, typeorm_1.Column)({ name: 'user_plant_selection_id' }),
     __metadata("design:type", Number)
-], CarePlan.prototype, "userId", void 0);
+], CarePlan.prototype, "userPlantSelectionId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'device_id' }),
-    __metadata("design:type", String)
-], CarePlan.prototype, "deviceId", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'int', name: 'plant_species_id' }),
-    __metadata("design:type", Number)
-], CarePlan.prototype, "plantSpeciesId", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'int', name: 'watering_frequency_days' }),
-    __metadata("design:type", Number)
-], CarePlan.prototype, "wateringFrequencyDays", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'int', name: 'fertilizing_frequency_days', nullable: true }),
-    __metadata("design:type", Number)
-], CarePlan.prototype, "fertilizingFrequencyDays", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', name: 'fertilizer_schedule', nullable: true }),
-    __metadata("design:type", Array)
-], CarePlan.prototype, "fertilizerSchedule", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'jsonb', name: 'pesticide_schedule', nullable: true }),
-    __metadata("design:type", Array)
-], CarePlan.prototype, "pesticideSchedule", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'int', name: 'skip_count', default: 0 }),
-    __metadata("design:type", Number)
-], CarePlan.prototype, "skipCount", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ type: 'enum', enum: CarePlanStatus, default: CarePlanStatus.ACTIVE }),
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: carePlanStatus_enum_1.CarePlanStatus,
+        default: carePlanStatus_enum_1.CarePlanStatus.ACTIVE,
+    }),
     __metadata("design:type", String)
 ], CarePlan.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: generatorType_enum_1.GeneratorType,
+        name: 'generator_type',
+    }),
     __metadata("design:type", String)
-], CarePlan.prototype, "notes", void 0);
+], CarePlan.prototype, "generatorType", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'uuid', name: 'replaced_by_plan_id', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'start_date', type: 'date' }),
+    __metadata("design:type", Date)
+], CarePlan.prototype, "startDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'end_date', type: 'date' }),
+    __metadata("design:type", Date)
+], CarePlan.prototype, "endDate", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'sensor_snapshot', type: 'json', nullable: true }),
+    __metadata("design:type", Object)
+], CarePlan.prototype, "sensorSnapshot", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'ai_recommendations', type: 'text', nullable: true }),
     __metadata("design:type", String)
-], CarePlan.prototype, "replacedByPlanId", void 0);
+], CarePlan.prototype, "aiRecommendations", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)
 ], CarePlan.prototype, "createdAt", void 0);
 __decorate([
-    (0, typeorm_1.UpdateDateColumn)({ name: 'updated_at' }),
-    __metadata("design:type", Date)
-], CarePlan.prototype, "updatedAt", void 0);
+    (0, typeorm_1.ManyToOne)(() => user_plant_selection_entity_1.UserPlantSelection, { nullable: false }),
+    (0, typeorm_1.JoinColumn)({ name: 'user_plant_selection_id' }),
+    __metadata("design:type", user_plant_selection_entity_1.UserPlantSelection)
+], CarePlan.prototype, "userPlantSelection", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => care_task_entity_1.CareTask, (task) => task.carePlan),
+    __metadata("design:type", Array)
+], CarePlan.prototype, "tasks", void 0);
 exports.CarePlan = CarePlan = __decorate([
     (0, typeorm_1.Entity)('care_plans'),
-    (0, typeorm_1.Index)(['userId', 'deviceId', 'status']),
-    (0, typeorm_1.Index)(['plantSpeciesId', 'status'])
+    (0, typeorm_1.Index)(['userPlantSelectionId']),
+    (0, typeorm_1.Index)(['status'])
 ], CarePlan);
 //# sourceMappingURL=care-plan.entity.js.map

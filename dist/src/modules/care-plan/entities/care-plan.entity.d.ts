@@ -1,32 +1,17 @@
-export declare enum CarePlanStatus {
-    ACTIVE = "active",
-    REPLACED = "replaced",
-    ARCHIVED = "archived"
-}
-interface FertilizerScheduleItem {
-    dayOfCycle: number;
-    productId: number;
-    dosageGrams: number;
-}
-interface PesticideScheduleItem {
-    dayOfCycle: number;
-    productId: number;
-    dosageMl: number;
-}
+import { UserPlantSelection } from '@/modules/user-plant-selections/entities/user-plant-selection.entity';
+import { CarePlanStatus } from '../enums/carePlanStatus.enum';
+import { GeneratorType } from '../enums/generatorType.enum';
+import { CareTask } from '@/modules/care-task/entities/care-task.entity';
 export declare class CarePlan {
-    id: string;
-    userId: number;
-    deviceId: string;
-    plantSpeciesId: number;
-    wateringFrequencyDays: number;
-    fertilizingFrequencyDays: number;
-    fertilizerSchedule: FertilizerScheduleItem[];
-    pesticideSchedule: PesticideScheduleItem[];
-    skipCount: number;
+    id: number;
+    userPlantSelectionId: number;
     status: CarePlanStatus;
-    notes: string;
-    replacedByPlanId: string;
+    generatorType: GeneratorType;
+    startDate: Date;
+    endDate: Date;
+    sensorSnapshot: Record<string, any>;
+    aiRecommendations: string;
     createdAt: Date;
-    updatedAt: Date;
+    userPlantSelection: UserPlantSelection;
+    tasks: CareTask[];
 }
-export {};

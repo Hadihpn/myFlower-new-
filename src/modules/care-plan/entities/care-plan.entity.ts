@@ -1,68 +1,64 @@
-// src/care-plans/entities/care-plan.entity.ts
+import { UserPlantSelection } from '@/modules/user-plant-selections/entities/user-plant-selection.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+  CreateDateColumn,
+  Index,
+} from 'typeorm';
+import { CarePlanStatus } from '../enums/carePlanStatus.enum';
+import { GeneratorType } from '../enums/generatorType.enum';
+import { CareTask } from '@/modules/care-task/entities/care-task.entity';
 
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 
-export enum CarePlanStatus {
-  ACTIVE = 'active',
-  REPLACED = 'replaced',
-  ARCHIVED = 'archived',
-}
-
-interface FertilizerScheduleItem {
-  dayOfCycle: number;
-  productId: number;
-  dosageGrams: number;
-}
-
-interface PesticideScheduleItem {
-  dayOfCycle: number;
-  productId: number;
-  dosageMl: number;
-}
 
 @Entity('care_plans')
-@Index(['userId', 'deviceId', 'status'])
-@Index(['plantSpeciesId', 'status'])
+@Index(['userPlantSelectionId'])
+@Index(['status'])
 export class CarePlan {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column({ type: 'int', name: 'user_id' })
-  userId: number;
+  @Column({ name: 'user_plant_selection_id' })
+  userPlantSelectionId: number;
 
-  @Column({ name: 'device_id' })
-  deviceId: string;
-
-  @Column({ type: 'int', name: 'plant_species_id' })
-  plantSpeciesId: number;
-
-  @Column({ type: 'int', name: 'watering_frequency_days' })
-  wateringFrequencyDays: number;
-
-  @Column({ type: 'int', name: 'fertilizing_frequency_days', nullable: true })
-  fertilizingFrequencyDays: number;
-
-  @Column({ type: 'jsonb', name: 'fertilizer_schedule', nullable: true })
-  fertilizerSchedule: FertilizerScheduleItem[];
-
-  @Column({ type: 'jsonb', name: 'pesticide_schedule', nullable: true })
-  pesticideSchedule: PesticideScheduleItem[];
-
-  @Column({ type: 'int', name: 'skip_count', default: 0 })
-  skipCount: number; // تعداد دفعاتی که کاربر task رو skip کرده
-
-  @Column({ type: 'enum', enum: CarePlanStatus, default: CarePlanStatus.ACTIVE })
+  @Column({
+    type: 'enum',
+    enum: CarePlanStatus,
+    default: CarePlanStatus.ACTIVE,
+  })
   status: CarePlanStatus;
 
-  @Column({ type: 'text', nullable: true })
-  notes: string;
+  @Column({
+    type: 'enum',
+    enum: GeneratorType,
+    name: 'generator_type',
+  })
+  generatorType: GeneratorType;
 
-  @Column({ type: 'uuid', name: 'replaced_by_plan_id', nullable: true })
-  replacedByPlanId: string; // اگه این plan جایگزین شده، ID برنامه جدید
+  @Column({ name: 'start_date', type: 'date' })
+  startDate: Date;
+
+  @Column({ name: 'end_date', type: 'date' })
+  endDate: Date;
+
+  @Column({ name: 'sensor_snapshot', type: 'json', nullable: true })
+  sensorSnapshot: Record<string, any>;
+
+  @Column({ name: 'ai_recommendations', type: 'text', nullable: true })
+  aiRecommendations: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  // Relations
+  @ManyToOne(() => UserPlantSelection, { nullable: false })
+  @JoinColumn({ name: 'user_plant_selection_id' })
+  userPlantSelection: UserPlantSelection;
+
+  @OneToMany(() => CareTask, (task) => task.carePlan)
+  tasks: CareTask[];
 }
