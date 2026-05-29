@@ -77,7 +77,8 @@ export class AiService {
       // );
       try {
         const completion = await this.openai.chat.completions.create({
-          model: 'openrouter/owl-alpha', // در OpenRouter معمولا به این صورت نام‌گذاری می‌شود
+          model: process.env.AI_MODEL, // در OpenRouter معمولا به این صورت نام‌گذاری می‌شود
+          // model: 'openrouter/owl-alpha', // در OpenRouter معمولا به این صورت نام‌گذاری می‌شود
           // model: 'baidu/cobuddy:free', // در OpenRouter معمولا به این صورت نام‌گذاری می‌شود
           // model: 'bgoogle/gemma-4-26b-a4b-it:free', // در OpenRouter معمولا به این صورت نام‌گذاری می‌شود
           // model: 'minimax/minimax-m2.5:free', // در OpenRouter معمولا به این صورت نام‌گذاری می‌شود
