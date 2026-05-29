@@ -37,7 +37,7 @@ let AiService = AiService_1 = class AiService {
             console.log('prompt', prompt);
             try {
                 const completion = await this.openai.chat.completions.create({
-                    model: 'openrouter/owl-alpha',
+                    model: process.env.AI_MODEL,
                     messages: [
                         {
                             role: 'system',
