@@ -12,6 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 var SensorReadingsService_1;
+var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SensorReadingsService = void 0;
 const common_1 = require("@nestjs/common");
@@ -348,11 +349,9 @@ exports.SensorReadingsService = SensorReadingsService;
 exports.SensorReadingsService = SensorReadingsService = SensorReadingsService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(sensor_reading_entity_1.SensorReading)),
-    __metadata("design:paramtypes", [typeorm_2.Repository,
-        devices_service_1.DevicesService,
+    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, devices_service_1.DevicesService,
         sensor_verification_service_1.SensorVerificationService,
         user_plant_selections_service_1.UserPlantSelectionsService,
-        notifications_service_1.NotificationsService,
-        config_1.ConfigService])
+        notifications_service_1.NotificationsService, typeof (_b = typeof config_1.ConfigService !== "undefined" && config_1.ConfigService) === "function" ? _b : Object])
 ], SensorReadingsService);
 //# sourceMappingURL=sensor-readings.service.js.map

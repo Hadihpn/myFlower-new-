@@ -1,5 +1,4 @@
-import { CreateUserActionDto } from './create-user-action.dto';
-declare const UpdateUserActionDto_base: import("@nestjs/mapped-types").MappedType<Partial<CreateUserActionDto>>;
+declare const UpdateUserActionDto_base: any;
 export declare class UpdateUserActionDto extends UpdateUserActionDto_base {
 }
 export {};

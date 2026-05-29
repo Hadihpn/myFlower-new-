@@ -8,7 +8,7 @@ export declare class CareTaskController {
     constructor(careTaskService: CareTaskService);
     getTodayTasks(req: any): Promise<import("./entities/care-task.entity").CareTask[]>;
     getTasksByPlan(carePlanId: number): Promise<import("./entities/care-task.entity").CareTask[]>;
-    getPendingTasks(carePlanId: number): Promise<import("./entities/care-task.entity").CareTask[]>;
+    getPendingTasks(carePlanId: number): Promise<any>;
     completeTask(taskId: number, dto: CompleteTaskDto): Promise<import("./entities/care-task.entity").CareTask>;
     skipTask(taskId: number, dto: SkipTaskDto): Promise<import("./entities/care-task.entity").CareTask>;
     updateTaskStatus(taskId: number, dto: UpdateTaskStatusDto): Promise<void>;

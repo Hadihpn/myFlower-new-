@@ -12,12 +12,12 @@ export declare class CareTaskService {
     findByPlan(carePlanId: number): Promise<CareTask[]>;
     updateStatus(taskId: number, status: TaskStatus): Promise<void>;
     cancelPendingTasks(carePlanId: number): Promise<void>;
-    findPendingTasks(carePlanId: number): Promise<CareTask[]>;
+    findPendingTasks(carePlanId: number): Promise<any>;
     completeTask(taskId: number, feedback?: string): Promise<CareTask>;
     skipTask(taskId: number, reason?: string): Promise<CareTask>;
     getTodayTasks(userId: number): Promise<CareTask[]>;
     getTaskUserId(taskId: number): Promise<number>;
     createFeedback(taskId: number, reason: string, feedbackAction: FeedbackAction): Promise<CareTaskFeedback>;
     getTaskFeedback(taskId: number): Promise<CareTaskFeedback[]>;
-    getSkippedTasksForRecalibration(carePlanId: number): Promise<CareTask[]>;
+    getSkippedTasksForRecalibration(carePlanId: number): Promise<any>;
 }

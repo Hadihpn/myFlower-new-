@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserActionsService = void 0;
 const common_1 = require("@nestjs/common");
@@ -68,7 +69,6 @@ exports.UserActionsService = UserActionsService;
 exports.UserActionsService = UserActionsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_action_entity_1.UserAction)),
-    __metadata("design:paramtypes", [typeorm_2.Repository,
-        devices_service_1.DevicesService])
+    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, devices_service_1.DevicesService])
 ], UserActionsService);
 //# sourceMappingURL=user-actions.service.js.map

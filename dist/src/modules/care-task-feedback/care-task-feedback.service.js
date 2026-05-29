@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CareTaskFeedbackService = void 0;
 const common_1 = require("@nestjs/common");
@@ -123,7 +124,6 @@ exports.CareTaskFeedbackService = CareTaskFeedbackService;
 exports.CareTaskFeedbackService = CareTaskFeedbackService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(care_task_feedback_entity_1.CareTaskFeedback)),
-    __metadata("design:paramtypes", [typeorm_2.Repository,
-        care_task_services_1.CareTaskService])
+    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, care_task_services_1.CareTaskService])
 ], CareTaskFeedbackService);
 //# sourceMappingURL=care-task-feedback.service.js.map

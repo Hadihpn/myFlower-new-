@@ -1,43 +1,43 @@
 declare const _default: () => {
     port: number;
-    nodeEnv: string;
-    appUrl: string;
+    nodeEnv: any;
+    appUrl: any;
     database: {
-        host: string;
+        host: any;
         port: number;
-        username: string;
-        password: string;
-        database: string;
+        username: any;
+        password: any;
+        database: any;
         synchronize: boolean;
         logging: boolean;
     };
     jwt: {
-        secret: string;
-        expiresIn: string;
-        refreshSecret: string;
-        refreshExpiresIn: string;
+        secret: any;
+        expiresIn: any;
+        refreshSecret: any;
+        refreshExpiresIn: any;
     };
     throttle: {
         ttl: number;
         limit: number;
     };
     email: {
-        host: string;
+        host: any;
         port: number;
         secure: boolean;
-        user: string;
-        password: string;
-        from: string;
+        user: any;
+        password: any;
+        from: any;
     };
     zarinpal: {
-        merchantId: string;
+        merchantId: any;
         sandbox: boolean;
-        callbackUrl: string;
+        callbackUrl: any;
     };
     upload: {
-        path: string;
+        path: any;
         maxFileSize: number;
-        allowedTypes: string[];
+        allowedTypes: any;
     };
     sensor: {
         readingInterval: number;
@@ -49,8 +49,8 @@ declare const _default: () => {
         verificationTimeout: number;
     };
     logging: {
-        level: string;
-        dir: string;
+        level: any;
+        dir: any;
     };
 };
 export default _default;
