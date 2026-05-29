@@ -4,6 +4,9 @@
   "description": "IoT-based Plant Monitoring and Care Advice System",
   "author": "HADIhpn",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "barrel": "barrelsby --config .barrelsby.json",
     "build": "nest build",
