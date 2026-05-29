@@ -8,11 +8,11 @@ export declare class JwtStrategy extends JwtStrategy_base {
     private configService;
     private userRepository;
     constructor(configService: ConfigService, userRepository: Repository<User>);
-    validate(payload: JwtPayload): Promise<{
-        id: number;
-        email: string;
-        role: import("../../users/types/user-role.enum").UserRole;
-        fullName: string;
+    validate(req: Request, payload: JwtPayload): Promise<{
+        id: any;
+        email: any;
+        role: any;
+        fullName: any;
     }>;
 }
 export {};

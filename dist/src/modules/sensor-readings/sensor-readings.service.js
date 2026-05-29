@@ -80,6 +80,9 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
         }
         return query.getMany();
     }
+    async getDeviceById(id) {
+        return await this.readingRepository.findOneBy({ id });
+    }
     async getLatestReading(deviceId) {
         return this.readingRepository.findOne({
             where: { deviceId },
@@ -174,7 +177,7 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
             }
         }
         catch (err) {
-            this.logger.warn(`checkSuddenChanges failed for device ${deviceId}: ${err.message}`);
+            this.logger.warn(`checkSuddenChanges failed for device ${deviceId}: ${err}`);
         }
     }
     async checkPlantThresholds(deviceId, userId, reading) {
@@ -222,7 +225,7 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
             console.log('message : ', messages);
         }
         catch (err) {
-            this.logger.warn(`checkPlantThresholds failed for device ${deviceId} / user ${userId}: ${err.message}`);
+            this.logger.warn(`checkPlantThresholds failed for device ${deviceId} / user ${userId}: ${err}`);
         }
     }
     getDateTruncExpression(interval) {
@@ -327,6 +330,7 @@ let SensorReadingsService = SensorReadingsService_1 = class SensorReadingsServic
         });
     }
     async getReadingsForDevice(deviceId, days = 7) {
+        console.log('getReadingsForDevice');
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
         return this.readingRepository.find({

@@ -32,12 +32,18 @@ const daily_summary_module_1 = require("./modules/daily-summary/daily-summary.mo
 const throttler_2 = require("@nestjs/throttler");
 const jwt_auth_guard_1 = require("./common/guards/jwt-auth.guard");
 const cache_manager_1 = require("@nestjs/cache-manager");
+const care_plan_module_1 = require("./modules/care-plan/care-plan.module");
+const care_task_module_1 = require("./modules/care-task/care-task.module");
+const care_task_feedback_module_1 = require("./modules/care-task-feedback/care-task-feedback.module");
+const schedule_1 = require("@nestjs/schedule");
+const llm_service_1 = require("./llm/llm.service");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            schedule_1.ScheduleModule.forRoot(),
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
                 load: [configuration_1.default],
@@ -86,6 +92,9 @@ exports.AppModule = AppModule = __decorate([
             notifications_module_1.NotificationsModule,
             admin_module_1.AdminModule,
             daily_summary_module_1.DailySummaryModule,
+            care_plan_module_1.CarePlanModule,
+            care_task_module_1.CareTaskModule,
+            care_task_feedback_module_1.CareTaskFeedbackModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [
@@ -98,6 +107,7 @@ exports.AppModule = AppModule = __decorate([
                 provide: core_1.APP_GUARD,
                 useClass: throttler_2.ThrottlerGuard,
             },
+            llm_service_1.LlmService,
         ],
     })
 ], AppModule);

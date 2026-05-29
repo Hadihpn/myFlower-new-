@@ -13,8 +13,6 @@ import { CarePlanStatus } from '../enums/carePlanStatus.enum';
 import { GeneratorType } from '../enums/generatorType.enum';
 import { CareTask } from '@/modules/care-task/entities/care-task.entity';
 
-
-
 @Entity('care_plans')
 @Index(['userPlantSelectionId'])
 @Index(['status'])
@@ -50,10 +48,14 @@ export class CarePlan {
 
   @Column({ name: 'ai_recommendations', type: 'text', nullable: true })
   aiRecommendations: string;
-
+  // @Column({ name: 'ai_request_time' })
+  // aiRequestedTime: number;
+  // @CreateDateColumn({ name: 'ai_used_at' })
+  // lastAiUsed: Date;
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-
+  // @CreateDateColumn({ name: 'active', default: true })
+  // active: boolean;
   // Relations
   @ManyToOne(() => UserPlantSelection, { nullable: false })
   @JoinColumn({ name: 'user_plant_selection_id' })

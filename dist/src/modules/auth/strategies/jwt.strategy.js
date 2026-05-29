@@ -26,23 +26,64 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
             secretOrKey: configService.get('jwt.secret'),
+            passReqToCallback: true
         });
         this.configService = configService;
         this.userRepository = userRepository;
+        console.log('✅ JwtStrategy initialized');
+        console.debug(`JWT Secret configured: ${configService.get('jwt.secret')?.substring(0, 10)}...`);
     }
-    async validate(payload) {
-        const user = await this.userRepository.findOne({
-            where: { id: payload.sub },
-        });
+    async validate(req, payload) {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('🔐 JWT Validation Started');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.debug('📦 Received JWT Payload:');
+        console.debug(JSON.stringify(payload, null, 2));
+        console.debug(`   - User ID (sub): ${payload.sub}`);
+        console.debug(`   - Email: ${payload.email}`);
+        console.log(`🔍 Searching for user with ID: ${payload.sub}`);
+        console.log(`🔍 Searching for user with ID: ${req}`);
+        let user;
+        try {
+            user = await this.userRepository.findOne({
+                where: { id: payload.sub },
+            });
+            if (user) {
+                console.log('✅ User found in database');
+                console.debug(`   - ID: ${user.id}`);
+                console.debug(`   - Email: ${user.email}`);
+                console.debug(`   - Role: ${user.role}`);
+                console.debug(`   - Full Name: ${user.fullName}`);
+            }
+            else {
+                console.error('❌ User NOT found in database');
+                console.error(`   - Searched ID: ${payload.sub}`);
+                console.error('   - Possible reasons:');
+                console.error('     1. User was deleted');
+                console.error('     2. Token contains invalid user ID');
+                console.error('     3. Database connection issue');
+            }
+        }
+        catch (error) {
+            console.error('❌ Database query failed');
+            console.error(`   - Error: ${error}`);
+            throw new common_1.UnauthorizedException('Database error during authentication');
+        }
         if (!user) {
+            console.error('🚫 Authentication FAILED - throwing UnauthorizedException');
             throw new common_1.UnauthorizedException('User not found');
         }
-        return {
+        const validatedUser = {
             id: user.id,
             email: user.email,
             role: user.role,
             fullName: user.fullName,
         };
+        console.log('✅ JWT Validation SUCCESSFUL');
+        console.debug('📤 Returning validated user object:');
+        console.debug(JSON.stringify(validatedUser, null, 2));
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        return validatedUser;
     }
 };
 exports.JwtStrategy = JwtStrategy;

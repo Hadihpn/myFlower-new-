@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateCareTaskFeedbackDto = void 0;
 const mapped_types_1 = require("@nestjs/mapped-types");
-const create_care_task_feedback_dto_1 = require("./create-care-task-feedback.dto");
-class UpdateCareTaskFeedbackDto extends (0, mapped_types_1.PartialType)(create_care_task_feedback_dto_1.CreateCareTaskFeedbackDto) {
+const create_task_feedback_dto_1 = require("./create-task-feedback.dto");
+class UpdateCareTaskFeedbackDto extends (0, mapped_types_1.PartialType)(create_task_feedback_dto_1.CreateTaskFeedbackDto) {
 }
 exports.UpdateCareTaskFeedbackDto = UpdateCareTaskFeedbackDto;
 //# sourceMappingURL=update-care-task-feedback.dto.js.map

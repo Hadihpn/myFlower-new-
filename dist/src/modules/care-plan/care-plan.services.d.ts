@@ -1,0 +1,30 @@
+import { Repository } from 'typeorm';
+import { CarePlan } from './entities/care-plan.entity';
+import { CareTask } from '@/modules/care-task/entities/care-task.entity';
+import { UserPlantSelection } from '@/modules/user-plant-selections/entities/user-plant-selection.entity';
+import { SensorReadingsService } from '@/modules/sensor-readings/sensor-readings.service';
+import { AiService } from '@/modules/ai/ai.service';
+import { NotificationsService } from '../notifications/notifications.service';
+export declare class CarePlanService {
+    private carePlanRepo;
+    private careTaskRepo;
+    private userPlantSelectionRepo;
+    private sensorReadingsService;
+    private aiService;
+    private notificationService;
+    private readonly logger;
+    private readonly PLAN_DURATION_DAYS;
+    private readonly AI_Requested_TIMES;
+    private readonly MIN_SENSOR_DAYS_FOR_AI;
+    constructor(carePlanRepo: Repository<CarePlan>, careTaskRepo: Repository<CareTask>, userPlantSelectionRepo: Repository<UserPlantSelection>, sensorReadingsService: SensorReadingsService, aiService: AiService, notificationService: NotificationsService);
+    createInitialPlan(userPlantSelectionId: number): Promise<CarePlan>;
+    private generateAiBasedPlan;
+    private generateRuleBasedPlan;
+    private generateRuleBasedTasks;
+    triggerAiRecalibration(carePlanId: number): Promise<CarePlan>;
+    cancelCurrentPlan(userPlantSelectionId: number): Promise<void>;
+    checkExpiredPlans(): Promise<void>;
+    private getDeviceDataAge;
+    private buildSensorSnapshot;
+    sendDailyTaskReminders(): Promise<void>;
+}

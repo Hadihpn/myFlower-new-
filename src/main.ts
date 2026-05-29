@@ -15,7 +15,9 @@ async function bootstrap() {
 
   // Database connection logging
   console.log('🔗 Database connection initiated...');
-  console.log(`📊 Connected to: ${configService.get('database.host')}:${configService.get('database.port')}/${configService.get('database.database')}`);
+  console.log(
+    `📊 Connected to: ${configService.get('database.host')}:${configService.get('database.port')}/${configService.get('database.database')}`,
+  );
 
   // Global prefix
   app.setGlobalPrefix('api');
@@ -45,10 +47,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
 
   // Global interceptors
-  app.useGlobalInterceptors(
-    new LoggingInterceptor(),
-    new TransformInterceptor(),
-  );
+  app.useGlobalInterceptors(new LoggingInterceptor(), new TransformInterceptor());
 
   // Swagger documentation
   const config = new DocumentBuilder()
@@ -61,6 +60,7 @@ async function bootstrap() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
         description: 'Enter JWT token',
+        in: 'header',
       },
       'JWT',
     )
@@ -100,7 +100,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get<number>('port') || 3000;
-  await app.listen(3000,'0.0.0.0');
+  await app.listen(3000, '0.0.0.0');
 
   console.log(`🚀 Application is running on: http://localhost:${port}`);
   console.log(`✅ Database connected successfully!`);

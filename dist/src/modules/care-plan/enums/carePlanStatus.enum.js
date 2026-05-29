@@ -6,5 +6,6 @@ var CarePlanStatus;
     CarePlanStatus["ACTIVE"] = "active";
     CarePlanStatus["COMPLETED"] = "completed";
     CarePlanStatus["CANCELLED"] = "cancelled";
+    CarePlanStatus["DRAFT"] = "draft";
 })(CarePlanStatus || (exports.CarePlanStatus = CarePlanStatus = {}));
 //# sourceMappingURL=carePlanStatus.enum.js.map

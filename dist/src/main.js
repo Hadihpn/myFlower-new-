@@ -40,6 +40,7 @@ async function bootstrap() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
         description: 'Enter JWT token',
+        in: 'header',
     }, 'JWT')
         .addApiKey({
         type: 'apiKey',

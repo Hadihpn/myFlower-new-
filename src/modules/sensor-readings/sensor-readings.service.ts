@@ -101,7 +101,9 @@ export class SensorReadingsService {
 
     return query.getMany();
   }
-
+  async getDeviceById(id: number) {
+    return await this.readingRepository.findOneBy({ id });
+  }
   async getLatestReading(deviceId: string): Promise<SensorReading | null> {
     return this.readingRepository.findOne({
       where: { deviceId },
@@ -262,7 +264,7 @@ export class SensorReadingsService {
         );
       }
     } catch (err) {
-      this.logger.warn(`checkSuddenChanges failed for device ${deviceId}: ${err.message}`);
+      this.logger.warn(`checkSuddenChanges failed for device ${deviceId}: ${err}`);
     }
   }
 
@@ -351,7 +353,7 @@ export class SensorReadingsService {
     } catch (err) {
       // Never let alerting crash the main request se;epipeline
       this.logger.warn(
-        `checkPlantThresholds failed for device ${deviceId} / user ${userId}: ${err.message}`,
+        `checkPlantThresholds failed for device ${deviceId} / user ${userId}: ${err}`,
       );
     }
   }
@@ -494,8 +496,10 @@ export class SensorReadingsService {
     });
   }
   async getReadingsForDevice(deviceId: string, days: number = 7): Promise<SensorReading[]> {
+    console.log('getReadingsForDevice');
+
     const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    startDate.setDate(startDate.getDate() - days );
 
     return this.readingRepository.find({
       where: {

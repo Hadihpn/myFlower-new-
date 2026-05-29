@@ -13,137 +13,132 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AiService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
-const axios_1 = require("@nestjs/axios");
-const rxjs_1 = require("rxjs");
+const openai_1 = require("openai");
 let AiService = AiService_1 = class AiService {
-    constructor(httpService, configService) {
-        this.httpService = httpService;
+    constructor(configService) {
         this.configService = configService;
         this.logger = new common_1.Logger(AiService_1.name);
-        this.apiUrl = 'https://api.deepseek.com/v1/chat/completions';
-        this.apiKey = this.configService.get('DEEPSEEK_API_KEY');
-        if (!this.apiKey) {
-            this.logger.warn('DEEPSEEK_API_KEY is not set in environment variables');
-        }
+        this.openai = new openai_1.default({
+            baseURL: 'https://openrouter.ai/api/v1',
+            apiKey: this.configService.get('OPENROUTER_API_KEY'),
+            timeout: 60000,
+            defaultHeaders: {
+                'X-Title': 'PlantCareApp',
+            },
+        });
     }
-    async generateCareSchedule(input) {
-        if (!this.apiKey) {
-            throw new Error('DeepSeek API key is not configured');
-        }
-        const prompt = this.buildCareSchedulePrompt(input);
-        const headers = {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json',
-        };
-        const data = {
-            model: 'deepseek-chat',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You are an expert plant care assistant. Generate personalized care schedules based on sensor data and plant species information. Return structured JSON with care tasks including: task type (watering/fertilizing/pruning), frequency, optimal time, and specific instructions based on current sensor readings.',
-                },
-                {
-                    role: 'user',
-                    content: prompt,
-                },
-            ],
-            max_tokens: 2000,
-            temperature: 0.7,
-        };
+    async generateCarePlan(userPlantSelection, sensorSnapshot, skipFeedback) {
         try {
-            const response = await (0, rxjs_1.lastValueFrom)(this.httpService.post(this.apiUrl, data, { headers }));
-            const content = response.data.choices[0]?.message?.content;
-            if (!content) {
-                throw new Error('Empty response from DeepSeek API');
+            console.log('generateCarePlan');
+            console.log("userPlantSelection :", userPlantSelection);
+            console.log("sensorSnapshot :", sensorSnapshot);
+            console.log("skipFeedback :", skipFeedback);
+            const prompt = this.buildPrompt(userPlantSelection, sensorSnapshot, skipFeedback);
+            console.log('prompt', prompt);
+            try {
+                const completion = await this.openai.chat.completions.create({
+                    model: 'openrouter/owl-alpha',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'You are an expert plant care advisor. Generate a 28-day care plan in JSON format.',
+                        },
+                        {
+                            role: 'user',
+                            content: prompt,
+                        },
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 2000,
+                });
+                console.log('completion : ', completion);
+                const content = completion.choices[0].message.content;
+                console.log('content : ', content);
+                const parsed = await this.parseAiResponse(content);
+                this.logger.log(`AI plan generated for selection ${userPlantSelection.id}`);
+                return parsed;
             }
-            if (response.data.usage) {
-                this.logger.log(`DeepSeek API usage - Tokens: ${response.data.usage.total_tokens} ` +
-                    `(prompt: ${response.data.usage.prompt_tokens}, completion: ${response.data.usage.completion_tokens})`);
+            catch (error) {
+                throw new Error('AI service unavailable');
             }
-            return content;
         }
         catch (error) {
-            this.logger.error('Error calling DeepSeek API:', error.response?.data || error.message);
-            throw new Error('Failed to generate AI-based care schedule');
+            this.logger.error('AI service failed', error);
+            throw new Error('AI service unavailable');
         }
     }
-    buildCareSchedulePrompt(input) {
-        const { plantSpeciesId, sensorData, userId, deviceId } = input;
-        const avgTemp = sensorData.length > 0
-            ? (sensorData.reduce((sum, r) => sum + (r.temperature || 0), 0) / sensorData.length).toFixed(1)
-            : 'N/A';
-        const avgHumidity = sensorData.length > 0
-            ? (sensorData.reduce((sum, r) => sum + (r.humidity || 0), 0) / sensorData.length).toFixed(1)
-            : 'N/A';
-        const avgSoilMoisture = sensorData.length > 0
-            ? (sensorData.reduce((sum, r) => sum + (r.soilMoisture || 0), 0) / sensorData.length).toFixed(1)
-            : 'N/A';
-        const avgLight = sensorData.length > 0
-            ? (sensorData.reduce((sum, r) => sum + (r.lightLevel || 0), 0) / sensorData.length).toFixed(0)
-            : 'N/A';
-        return `
-Generate a personalized plant care schedule based on the following data:
+    buildPrompt(selection, sensorSnapshot, skipFeedback) {
+        const plantName = selection.plantSpecies?.name || selection.package?.name || 'Unknown plant';
+        const deviceName = selection.device?.name || 'Device';
+        let prompt = `Generate a 28-day care plan (in persian )for:
+- Plant: ${plantName}
+- Device: ${deviceName}
+- Planted Date: ${selection.plantedDate}
 
-**Plant Species ID**: ${plantSpeciesId}
-**Device ID**: ${deviceId}
-**User ID**: ${userId}
+Sensor Data (last 7 days average):
+- Temperature: ${sensorSnapshot.avgTemperature || 'N/A'}°C
+- Humidity: ${sensorSnapshot.avgHumidity || 'N/A'}%
+- Soil Moisture: ${sensorSnapshot.avgSoilMoisture || 'N/A'}%
+- Light: ${sensorSnapshot.avgLight || 'N/A'} lux
 
-**Current Sensor Readings** (averages from last ${sensorData.length} readings):
-- Temperature: ${avgTemp}°C
-- Humidity: ${avgHumidity}%
-- Soil Moisture: ${avgSoilMoisture}%
-- Light Level: ${avgLight} lux
-
-Please provide a JSON response with the following structure:
+`;
+        if (skipFeedback) {
+            prompt += `User Feedback: ${skipFeedback}\n\n`;
+        }
+        prompt += `Return ONLY valid JSON in this exact format:
 {
   "tasks": [
     {
-      "type": "watering" | "fertilizing" | "pruning" | "light_adjustment",
-      "frequency": "daily" | "weekly" | "biweekly" | "monthly",
-      "optimalTime": "morning" | "afternoon" | "evening",
-      "instructions": "specific instructions based on sensor data"
+      "taskType": "watering|fertilizing|pesticide|light_adjustment|pruning",
+      "scheduledDate": "YYYY-MM-DD",
+      "instructions": "detailed instructions",
+      "optimalTime": "morning|afternoon|evening",
+      "shopProductType": "nitrogen_fertilizer|potassium_fertilizer|pesticide|pruning_tool"
     }
   ],
-  "recommendations": "general care recommendations based on current conditions"
+  "reasoning": "brief explanation"
 }
-`;
+
+Rules:
+- scheduledDate must be within next 28 days from today
+- taskType must be one of: watering, fertilizing, pesticide, light_adjustment, pruning
+- optimalTime is optional
+- shopProductType is optional, use only if product recommendation needed
+- Return 5-15 tasks spread across 28 days`;
+        return prompt;
     }
-    async generateTable(prompt) {
-        if (!this.apiKey) {
-            throw new Error('DeepSeek API key is not configured');
-        }
-        const headers = {
-            'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json',
-        };
-        const data = {
-            model: 'deepseek-chat',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You are a helpful assistant that generates data as a markdown table.',
-                },
-                {
-                    role: 'user',
-                    content: `لطفاً داده‌های زیر را به صورت یک جدول Markdown منظم ارائه بده: ${prompt}`,
-                },
-            ],
-            max_tokens: 1000,
-        };
+    parseAiResponse(content) {
         try {
-            const response = await (0, rxjs_1.lastValueFrom)(this.httpService.post(this.apiUrl, data, { headers }));
-            return response.data.choices[0]?.message?.content || '';
+            console.log("parseAiResponse", content);
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
+                throw new Error('No JSON found in AI response');
+            }
+            const parsed = JSON.parse(jsonMatch[0]);
+            console.log("parsed JSON ai response", parsed);
+            if (!parsed.tasks || !Array.isArray(parsed.tasks)) {
+                throw new Error('Invalid AI response structure');
+            }
+            return {
+                tasks: parsed.tasks.map((task) => ({
+                    taskType: task.taskType,
+                    scheduledDate: task.scheduledDate,
+                    instructions: task.instructions || '',
+                    optimalTime: task.optimalTime || null,
+                    shopProductType: task.shopProductType || null,
+                })),
+                reasoning: parsed.reasoning || '',
+            };
         }
         catch (error) {
-            this.logger.error('Error calling DeepSeek API:', error.response?.data || error.message);
-            throw new Error('Failed to process data with DeepSeek');
+            this.logger.error('Failed to parse AI response', error);
+            throw new Error('Invalid AI response format');
         }
     }
 };
 exports.AiService = AiService;
 exports.AiService = AiService = AiService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [axios_1.HttpService,
-        config_1.ConfigService])
+    __metadata("design:paramtypes", [config_1.ConfigService])
 ], AiService);
 //# sourceMappingURL=ai.service.js.map

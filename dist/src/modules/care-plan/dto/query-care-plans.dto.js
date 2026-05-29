@@ -14,6 +14,7 @@ const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const carePlanStatus_enum_1 = require("../enums/carePlanStatus.enum");
+const generatorType_enum_1 = require("../enums/generatorType.enum");
 class QueryCarePlansDto {
 }
 exports.QueryCarePlansDto = QueryCarePlansDto;
@@ -30,6 +31,24 @@ __decorate([
     (0, class_validator_1.IsEnum)(carePlanStatus_enum_1.CarePlanStatus),
     __metadata("design:type", String)
 ], QueryCarePlansDto.prototype, "status", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ enum: generatorType_enum_1.GeneratorType, description: 'Filter by GeneratorType' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(generatorType_enum_1.GeneratorType),
+    __metadata("design:type", String)
+], QueryCarePlansDto.prototype, "generatorType", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: 'createdAt' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", Object)
+], QueryCarePlansDto.prototype, "sortBy", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ default: 'DESC' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(carePlanStatus_enum_1.CarePlanStatus),
+    __metadata("design:type", Object)
+], QueryCarePlansDto.prototype, "sortOrder", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({ default: 1, minimum: 1 }),
     (0, class_validator_1.IsOptional)(),

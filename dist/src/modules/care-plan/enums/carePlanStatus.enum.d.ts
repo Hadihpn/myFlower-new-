@@ -1,5 +1,6 @@
 export declare enum CarePlanStatus {
     ACTIVE = "active",
     COMPLETED = "completed",
-    CANCELLED = "cancelled"
+    CANCELLED = "cancelled",
+    DRAFT = "draft"
 }

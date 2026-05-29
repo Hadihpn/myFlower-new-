@@ -50,6 +50,21 @@ export class CreateCarePlansTable1700000000018 implements MigrationInterface {
             type: 'text',
             isNullable: true,
           },
+          // {
+          //   name: 'ai_request_time',
+          //   type: 'int',
+          //   isNullable: false,
+          // },
+          // {
+          //   name: 'ai_used_at',
+          //   type: 'timestamp',
+          //   default: 'CURRENT_TIMESTAMP',
+          // },
+          //  {
+          //   name: 'active',
+          //   type: 'bool',
+          //   default: true,
+          // },
           {
             name: 'created_at',
             type: 'timestamp',

@@ -1,31 +1,22 @@
-// src/care-task-feedbacks/dto/create-care-task-feedback.dto.ts
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsEnum, IsOptional, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
+// dto/create-task-feedback.dto.ts
+import { IsEnum, IsString, IsOptional, IsInt } from 'class-validator';
 import { FeedbackAction } from '../enums/feedbackAction.enum';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-
-export class CreateCareTaskFeedbackDto {
-  @ApiProperty({ description: 'Care task ID' })
+export class CreateTaskFeedbackDto {
   @IsInt()
-  @Type(() => Number)
-  care_task_id: number;
+  @ApiProperty({ description: 'ID of the care task', example: 1 })
+  careTaskId: number;
 
-  @ApiProperty({ description: 'User ID who provided feedback' })
-  @IsInt()
-  @Type(() => Number)
-  user_id: number;
-
-  @ApiProperty({ enum: FeedbackAction, description: 'Action taken by user' })
+  @ApiProperty({ enum: FeedbackAction, description: 'Action taken on the task' })
   @IsEnum(FeedbackAction)
   action: FeedbackAction;
 
-  @ApiPropertyOptional({ description: 'Reason for skipping (if action is skipped)' })
-  @IsOptional()
+  @ApiProperty({ description: 'Reason for the feedback', example: 'Plant was already watered' })
   @IsString()
-  reason?: string;
+  reason: string;
 
-  @ApiPropertyOptional({ description: 'Additional user notes' })
+  @ApiPropertyOptional({ description: 'Optional additional note', example: 'Will water tomorrow' })
   @IsOptional()
   @IsString()
   note?: string;

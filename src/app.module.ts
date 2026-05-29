@@ -27,10 +27,17 @@ import { DailySummaryModule } from './modules/daily-summary/daily-summary.module
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { CacheModule } from '@nestjs/cache-manager';
+import { CarePlan } from './modules/care-plan/entities/care-plan.entity';
+import { CarePlanModule } from './modules/care-plan/care-plan.module';
+import { CareTaskModule } from './modules/care-task/care-task.module';
+import { CareTaskFeedbackModule } from './modules/care-task-feedback/care-task-feedback.module';
+import { ScheduleModule } from '@nestjs/schedule';
 // import { CareScheduleModule } from './modules/careSchedules/care-schedule.module';
+import { LlmService } from './llm/llm.service';
 
 @Module({
   imports: [
+     ScheduleModule.forRoot(),
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
@@ -86,6 +93,9 @@ import { CacheModule } from '@nestjs/cache-manager';
     NotificationsModule,
     AdminModule,
     DailySummaryModule,
+    CarePlanModule,
+    CareTaskModule,
+    CareTaskFeedbackModule
     // CareScheduleModule
   ],
   controllers: [AppController],
@@ -99,6 +109,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    LlmService,
   ],
 })
 export class AppModule {}
