@@ -5,7 +5,7 @@ export declare class CarePlanController {
     private readonly carePlanService;
     private readonly logger;
     constructor(carePlanService: CarePlanService);
-    createInitialCarePlan(req: Request, userPlantSelectionId: number): Promise<any>;
+    createInitialCarePlan(req: Request, userPlantSelectionId: number): Promise<CarePlan>;
     recalibratePlan(carePlanId: number): Promise<CarePlan>;
     cancelPlan(userPlantSelectionId: number): Promise<{
         message: string;

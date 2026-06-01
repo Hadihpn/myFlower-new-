@@ -3,17 +3,17 @@ export declare class AdminController {
     private readonly adminService;
     constructor(adminService: AdminService);
     getDashboardStats(): Promise<{
-        totalUsers: any;
-        totalDevices: any;
-        activeDevices: any;
-        totalReadings: any;
-        activeSubscriptions: any;
+        totalUsers: number;
+        totalDevices: number;
+        activeDevices: number;
+        totalReadings: number;
+        activeSubscriptions: number;
         timestamp: Date;
     }>;
-    getRecentUsers(): Promise<any>;
+    getRecentUsers(): Promise<import("../users/entities/user.entity").User[]>;
     getSystemHealth(): Promise<{
         status: string;
-        offlineDevices: any;
-        maintenanceDevices: any;
+        offlineDevices: number;
+        maintenanceDevices: number;
     }>;
 }

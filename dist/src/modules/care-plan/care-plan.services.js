@@ -12,7 +12,6 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 var CarePlanService_1;
-var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CarePlanService = void 0;
 const common_1 = require("@nestjs/common");
@@ -341,7 +340,10 @@ exports.CarePlanService = CarePlanService = CarePlanService_1 = __decorate([
     __param(0, (0, typeorm_1.InjectRepository)(care_plan_entity_1.CarePlan)),
     __param(1, (0, typeorm_1.InjectRepository)(care_task_entity_1.CareTask)),
     __param(2, (0, typeorm_1.InjectRepository)(user_plant_selection_entity_1.UserPlantSelection)),
-    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object, typeof (_c = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _c : Object, sensor_readings_service_1.SensorReadingsService,
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        sensor_readings_service_1.SensorReadingsService,
         ai_service_1.AiService,
         notifications_service_1.NotificationsService])
 ], CarePlanService);

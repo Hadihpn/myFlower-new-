@@ -6,12 +6,15 @@ import { DailySummaryController } from './daily-summary.controller'; // ADD THIS
 import { DailySummary } from './entities/daily-summary.entity';
 import { SensorReadingsModule } from '@modules/sensor-readings/sensor-readings.module';
 import { SensorReading } from '../sensor-readings/entities/sensor-reading.entity';
+import { Device } from '../devices/entities/device.entity';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([DailySummary,SensorReading]),
+    TypeOrmModule.forFeature([DailySummary,SensorReading,Device]),
     ScheduleModule.forRoot(),
     SensorReadingsModule,
+    NotificationsModule
   ],
   controllers: [DailySummaryController], // ADD THIS
   providers: [DailySummaryService],

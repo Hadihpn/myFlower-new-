@@ -15,7 +15,7 @@ export class DeviceRateLimitGuard implements CanActivate {
     
     if (lastRequest) {
       const elapsed = Date.now() - lastRequest;
-      if (elapsed < 5 * 60 * 1000) {
+      if (elapsed < 1 * 60 * 1000) {
         throw new HttpException(
           'Too many requests. Wait 5 minutes.',
           HttpStatus.TOO_MANY_REQUESTS

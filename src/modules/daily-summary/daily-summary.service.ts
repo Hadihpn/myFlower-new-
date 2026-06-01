@@ -1,18 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DailySummary } from './entities/daily-summary.entity';
 import { SensorReadingsService } from '@modules/sensor-readings/sensor-readings.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { SensorReading } from '../sensor-readings/entities/sensor-reading.entity';
+import { Device } from '../devices/entities/device.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class DailySummaryService {
+  private readonly logger = new Logger(DailySummaryService.name);
+
   constructor(
     @InjectRepository(DailySummary)
     private summaryRepository: Repository<DailySummary>,
     @InjectRepository(SensorReading)
     private sensorReadingRepository: Repository<SensorReading>,
+    @InjectRepository(Device)
+    private deviceRepository: Repository<Device>,
+    private notificationService: NotificationsService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -102,5 +109,60 @@ export class DailySummaryService {
       order: { date: 'DESC' },
       take: limit,
     });
+  }
+  EVERY_DAY_AT_2AM;
+  @Cron(CronExpression.EVERY_DAY_AT_2AM)
+  async notifyDevicesWithoutRecentReadings(): Promise<void> {
+    const now = new Date();
+    const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    this.logger.log(`Checking devices without sensor readings since ${last24Hours.toISOString()}`);
+
+    const devicesWithoutRecentReadings = await this.deviceRepository
+      .createQueryBuilder('d')
+      .leftJoinAndSelect('d.user', 'u')
+      .where((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('1')
+          .from(SensorReading, 'r')
+          .where('r.device_id = d.device_id')
+          .andWhere('r.timestamp >= :last24Hours')
+          .getQuery();
+
+        return `NOT EXISTS ${subQuery}`;
+      })
+      .setParameter('last24Hours', last24Hours)
+      .getMany();
+
+    if (!devicesWithoutRecentReadings.length) {
+      this.logger.log('All devices have sent sensor readings in the last 24 hours.');
+      return;
+    }
+
+    for (const device of devicesWithoutRecentReadings) {
+      try {
+        if (!device.user?.email) continue;
+
+        const subject = 'هشدار عدم ارسال داده از دستگاه';
+        const message = `کاربر گرامی،
+
+دستگاه شما با شناسه ${device.deviceId}${device.name ? ` (${device.name})` : ''} در 24 ساعت گذشته هیچ داده‌ای ارسال نکرده است.
+لطفاً دستگاه را برای مشکل احتمالی بررسی کنید.
+
+با احترام`;
+
+        await this.notificationService.sendEmail(device.user.email, subject, message);
+
+        this.logger.warn(
+          `Missing-reading alert queued/sent to ${device.user.email} for device ${device.deviceId}`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to process missing-reading alert for device ${device.deviceId}`,
+          error instanceof Error ? error.stack : String(error),
+        );
+      }
+    }
   }
 }

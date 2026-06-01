@@ -37,13 +37,13 @@ export class NotificationsService {
     //   },
     // });
 
-     this.transporter = nodemailer.createTransport({
-      host:"smtp.c1.liara.email",
-      port:587,
-      secure:false,
+    this.transporter = nodemailer.createTransport({
+      host: 'smtp.c1.liara.email',
+      port: 587,
+      secure: false,
       auth: {
-        user: "loving_kowalevski_okuhtc",
-        pass: "03d80178-0b6f-417c-aed2-e039ce166330",
+        user: 'loving_kowalevski_okuhtc',
+        pass: '03d80178-0b6f-417c-aed2-e039ce166330',
       },
     });
   }
@@ -93,13 +93,14 @@ export class NotificationsService {
     try {
       console.log('sendemail', { to, subject, html });
       console.log('from email', this.configService.get<string>('email.from'));
-      await this.transporter.sendMail({
+      const mail = await this.transporter.sendMail({
         // from: this.configService.get<string>('email.from'),
-        from: process.env.EMAIL_FROM ,
+        from: process.env.EMAIL_FROM,
         to,
         subject,
         html,
       });
+      console.log('mail', mail);
     } catch (error) {
       console.error('Error sending email:', error);
       throw error;
@@ -133,17 +134,10 @@ export class NotificationsService {
       <p>Please check your plants immediately!</p>
     `;
 
-    await this.sendEmail(
-      settings.user.email,
-      'Plant Alert: Sudden Change Detected',
-      html,
-    );
+    await this.sendEmail(settings.user.email, 'Plant Alert: Sudden Change Detected', html);
   }
 
-  async sendSensorAnomalyNotification(
-    deviceId: string,
-    messages: string[],
-  ): Promise<void> {
+  async sendSensorAnomalyNotification(deviceId: string, messages: string[]): Promise<void> {
     const device = await this.devicesService.findDeviceByDeviceId(deviceId);
     if (!device) {
       throw new NotFoundException(`Device ${deviceId} not found`);
@@ -167,11 +161,7 @@ export class NotificationsService {
       <p>Please check your plants!</p>
     `;
 
-    await this.sendEmail(
-      settings.user.email,
-      'Plant Alert: Sensor Anomalies Detected',
-      html,
-    );
+    await this.sendEmail(settings.user.email, 'Plant Alert: Sensor Anomalies Detected', html);
   }
 
   async sendWelcomeEmail(email: string, name: string): Promise<void> {
@@ -184,23 +174,11 @@ export class NotificationsService {
       appUrl: this.configService.get('appUrl'),
     });
 
-    await this.sendEmail(
-      email,
-      '🌱 Welcome to Plant Monitoring System!',
-      html,
-    );
+    await this.sendEmail(email, '🌱 Welcome to Plant Monitoring System!', html);
   }
 
-  async sendThresholdAlert(
-    email: string,
-    name: string,
-    messages: string[],
-  ): Promise<void> {
-    const templatePath = path.join(
-      __dirname,
-      'templates',
-      'unsuiteCondition.hbs',
-    );
+  async sendThresholdAlert(email: string, name: string, messages: string[]): Promise<void> {
+    const templatePath = path.join(__dirname, 'templates', 'unsuiteCondition.hbs');
     const templateSource = fs.readFileSync(templatePath, 'utf8');
     const template = handlebars.compile(templateSource);
 
@@ -285,9 +263,7 @@ export class NotificationsService {
   /**
    * دریافت لیست notifications خوانده‌نشده
    */
-  async getUnreadNotifications(
-    userId: number,
-  ): Promise<NotificationResponseDto[]> {
+  async getUnreadNotifications(userId: number): Promise<NotificationResponseDto[]> {
     const notifications = await this.notificationRepository.find({
       where: { userId, isRead: false },
       order: { createdAt: 'DESC' },
@@ -300,10 +276,7 @@ export class NotificationsService {
   /**
    * علامت‌گذاری یک notification به عنوان خوانده‌شده
    */
-  async markAsRead(
-    userId: number,
-    notificationId: string,
-  ): Promise<NotificationResponseDto> {
+  async markAsRead(userId: number, notificationId: string): Promise<NotificationResponseDto> {
     const notification = await this.notificationRepository.findOne({
       where: { id: notificationId, userId },
     });
@@ -338,10 +311,7 @@ export class NotificationsService {
   /**
    * حذف یک notification
    */
-  async deleteNotification(
-    userId: number,
-    notificationId: string,
-  ): Promise<void> {
+  async deleteNotification(userId: number, notificationId: string): Promise<void> {
     const result = await this.notificationRepository.delete({
       id: notificationId,
       userId,
@@ -366,6 +336,4 @@ export class NotificationsService {
       createdAt: notification.createdAt,
     };
   }
-
-  
 }

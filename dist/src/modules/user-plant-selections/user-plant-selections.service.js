@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserPlantSelectionsService = void 0;
 const common_1 = require("@nestjs/common");
@@ -177,7 +176,8 @@ exports.UserPlantSelectionsService = UserPlantSelectionsService;
 exports.UserPlantSelectionsService = UserPlantSelectionsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_plant_selection_entity_1.UserPlantSelection)),
-    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, subscription_service_1.SubscriptionService,
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        subscription_service_1.SubscriptionService,
         devices_service_1.DevicesService,
         plants_service_1.PlantsService])
 ], UserPlantSelectionsService);

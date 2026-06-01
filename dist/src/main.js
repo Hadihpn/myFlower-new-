@@ -10,9 +10,11 @@ const logging_interceptor_1 = require("./common/interceptors/logging.interceptor
 const transform_interceptor_1 = require("./common/interceptors/transform.interceptor");
 const express = require("express");
 const path_1 = require("path");
+const cookieParser = require("cookie-parser");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const configService = app.get(config_1.ConfigService);
+    app.use(cookieParser());
     console.log('🔗 Database connection initiated...');
     console.log(`📊 Connected to: ${configService.get('database.host')}:${configService.get('database.port')}/${configService.get('database.database')}`);
     app.setGlobalPrefix('api');

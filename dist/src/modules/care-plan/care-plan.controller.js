@@ -12,14 +12,12 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 var CarePlanController_1;
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CarePlanController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const care_plan_entity_1 = require("./entities/care-plan.entity");
 const care_plan_services_1 = require("./care-plan.services");
-const express_1 = require("express");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 let CarePlanController = CarePlanController_1 = class CarePlanController {
     constructor(carePlanService) {
@@ -67,7 +65,7 @@ __decorate([
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Param)('userPlantSelectionId', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_a = typeof express_1.Request !== "undefined" && express_1.Request) === "function" ? _a : Object, Number]),
+    __metadata("design:paramtypes", [Object, Number]),
     __metadata("design:returntype", Promise)
 ], CarePlanController.prototype, "createInitialCarePlan", null);
 __decorate([

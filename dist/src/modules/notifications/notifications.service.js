@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationsService = void 0;
 const common_1 = require("@nestjs/common");
@@ -32,12 +31,12 @@ let NotificationsService = class NotificationsService {
         this.settingsRepository = settingsRepository;
         this.notificationRepository = notificationRepository;
         this.transporter = nodemailer.createTransport({
-            host: "smtp.c1.liara.email",
+            host: 'smtp.c1.liara.email',
             port: 587,
             secure: false,
             auth: {
-                user: "loving_kowalevski_okuhtc",
-                pass: "03d80178-0b6f-417c-aed2-e039ce166330",
+                user: 'loving_kowalevski_okuhtc',
+                pass: '03d80178-0b6f-417c-aed2-e039ce166330',
             },
         });
     }
@@ -76,12 +75,13 @@ let NotificationsService = class NotificationsService {
         try {
             console.log('sendemail', { to, subject, html });
             console.log('from email', this.configService.get('email.from'));
-            await this.transporter.sendMail({
+            const mail = await this.transporter.sendMail({
                 from: process.env.EMAIL_FROM,
                 to,
                 subject,
                 html,
             });
+            console.log('mail', mail);
         }
         catch (error) {
             console.error('Error sending email:', error);
@@ -253,6 +253,9 @@ exports.NotificationsService = NotificationsService = __decorate([
     (0, common_1.Injectable)(),
     __param(2, (0, typeorm_1.InjectRepository)(notification_settings_entity_1.NotificationSettings)),
     __param(3, (0, typeorm_1.InjectRepository)(notification_entity_1.Notification)),
-    __metadata("design:paramtypes", [typeof (_a = typeof config_1.ConfigService !== "undefined" && config_1.ConfigService) === "function" ? _a : Object, devices_service_1.DevicesService, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object, typeof (_c = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _c : Object])
+    __metadata("design:paramtypes", [config_1.ConfigService,
+        devices_service_1.DevicesService,
+        typeorm_2.Repository,
+        typeorm_2.Repository])
 ], NotificationsService);
 //# sourceMappingURL=notifications.service.js.map

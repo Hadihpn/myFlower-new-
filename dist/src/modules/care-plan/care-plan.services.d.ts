@@ -17,7 +17,7 @@ export declare class CarePlanService {
     private readonly AI_Requested_TIMES;
     private readonly MIN_SENSOR_DAYS_FOR_AI;
     constructor(carePlanRepo: Repository<CarePlan>, careTaskRepo: Repository<CareTask>, userPlantSelectionRepo: Repository<UserPlantSelection>, sensorReadingsService: SensorReadingsService, aiService: AiService, notificationService: NotificationsService);
-    createInitialPlan(userPlantSelectionId: number): Promise<any>;
+    createInitialPlan(userPlantSelectionId: number): Promise<CarePlan>;
     private generateAiBasedPlan;
     private generateRuleBasedPlan;
     private generateRuleBasedTasks;

@@ -10,17 +10,17 @@ export declare class AdminService {
     private subscriptionRepository;
     constructor(userRepository: Repository<User>, deviceRepository: Repository<Device>, readingRepository: Repository<SensorReading>, subscriptionRepository: Repository<UserSubscription>);
     getDashboardStats(): Promise<{
-        totalUsers: any;
-        totalDevices: any;
-        activeDevices: any;
-        totalReadings: any;
-        activeSubscriptions: any;
+        totalUsers: number;
+        totalDevices: number;
+        activeDevices: number;
+        totalReadings: number;
+        activeSubscriptions: number;
         timestamp: Date;
     }>;
-    getRecentUsers(limit?: number): Promise<any>;
+    getRecentUsers(limit?: number): Promise<User[]>;
     getSystemHealth(): Promise<{
         status: string;
-        offlineDevices: any;
-        maintenanceDevices: any;
+        offlineDevices: number;
+        maintenanceDevices: number;
     }>;
 }

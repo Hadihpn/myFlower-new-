@@ -18,7 +18,6 @@ const swagger_1 = require("@nestjs/swagger");
 const auth_service_1 = require("./auth.service");
 const login_dto_1 = require("./dto/login.dto");
 const register_dto_1 = require("./dto/register.dto");
-const refresh_token_dto_1 = require("./dto/refresh-token.dto");
 const change_password_dto_1 = require("./dto/change-password.dto");
 const public_decorator_1 = require("../../common/decorators/public.decorator");
 const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
@@ -34,14 +33,53 @@ let AuthController = class AuthController {
             console.log(error);
         }
     }
-    async login(loginDto) {
-        return this.authService.login(loginDto);
+    async login(loginDto, res) {
+        const { accessToken, refreshToken } = await this.authService.login(loginDto);
+        res.cookie('access_token', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 15 * 60 * 1000,
+        });
+        res.cookie('refresh_token', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/api/auth/refresh',
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+        });
+        return { accessToken };
     }
-    async refresh(refreshTokenDto) {
-        return this.authService.refreshToken(refreshTokenDto.refreshToken);
+    async refresh(req, res) {
+        const refreshToken = req.cookies?.refresh_token;
+        if (!refreshToken) {
+            throw new common_1.UnauthorizedException('No refresh token');
+        }
+        const { accessToken, refreshToken: newRefreshToken } = await this.authService.refreshToken(refreshToken);
+        res.cookie('access_token', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 15 * 60 * 1000,
+        });
+        res.cookie('refresh_token', newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/api/auth/refresh',
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+        });
+        return { accessToken };
     }
     async changePassword(userId, changePasswordDto) {
         return this.authService.changePassword(userId, changePasswordDto);
+    }
+    logout(res) {
+        res.clearCookie('access_token', { path: '/' });
+        res.clearCookie('refresh_token', { path: '/api/auth/refresh' });
+        return { ok: true };
     }
 };
 exports.AuthController = AuthController;
@@ -64,8 +102,9 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Login successful' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'Invalid credentials' }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [login_dto_1.LoginDto]),
+    __metadata("design:paramtypes", [login_dto_1.LoginDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
@@ -75,9 +114,10 @@ __decorate([
     (0, swagger_1.ApiOperation)({ summary: 'Refresh access token' }),
     (0, swagger_1.ApiResponse)({ status: 200, description: 'Token refreshed successfully' }),
     (0, swagger_1.ApiResponse)({ status: 401, description: 'Invalid refresh token' }),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [refresh_token_dto_1.RefreshTokenDto]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "refresh", null);
 __decorate([
@@ -93,6 +133,13 @@ __decorate([
     __metadata("design:paramtypes", [Number, change_password_dto_1.ChangePasswordDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "changePassword", null);
+__decorate([
+    (0, common_1.Post)('logout'),
+    __param(0, (0, common_1.Res)({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "logout", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),

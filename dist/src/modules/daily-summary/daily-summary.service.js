@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b;
+var DailySummaryService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DailySummaryService = void 0;
 const common_1 = require("@nestjs/common");
@@ -20,10 +20,15 @@ const typeorm_2 = require("typeorm");
 const daily_summary_entity_1 = require("./entities/daily-summary.entity");
 const schedule_1 = require("@nestjs/schedule");
 const sensor_reading_entity_1 = require("../sensor-readings/entities/sensor-reading.entity");
-let DailySummaryService = class DailySummaryService {
-    constructor(summaryRepository, sensorReadingRepository) {
+const device_entity_1 = require("../devices/entities/device.entity");
+const notifications_service_1 = require("../notifications/notifications.service");
+let DailySummaryService = DailySummaryService_1 = class DailySummaryService {
+    constructor(summaryRepository, sensorReadingRepository, deviceRepository, notificationService) {
         this.summaryRepository = summaryRepository;
         this.sensorReadingRepository = sensorReadingRepository;
+        this.deviceRepository = deviceRepository;
+        this.notificationService = notificationService;
+        this.logger = new common_1.Logger(DailySummaryService_1.name);
     }
     async generateDailySummaries() {
         const yesterday = new Date();
@@ -100,6 +105,48 @@ let DailySummaryService = class DailySummaryService {
             take: limit,
         });
     }
+    async notifyDevicesWithoutRecentReadings() {
+        const now = new Date();
+        const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        this.logger.log(`Checking devices without sensor readings since ${last24Hours.toISOString()}`);
+        const devicesWithoutRecentReadings = await this.deviceRepository
+            .createQueryBuilder('d')
+            .leftJoinAndSelect('d.user', 'u')
+            .where((qb) => {
+            const subQuery = qb
+                .subQuery()
+                .select('1')
+                .from(sensor_reading_entity_1.SensorReading, 'r')
+                .where('r.device_id = d.device_id')
+                .andWhere('r.timestamp >= :last24Hours')
+                .getQuery();
+            return `NOT EXISTS ${subQuery}`;
+        })
+            .setParameter('last24Hours', last24Hours)
+            .getMany();
+        if (!devicesWithoutRecentReadings.length) {
+            this.logger.log('All devices have sent sensor readings in the last 24 hours.');
+            return;
+        }
+        for (const device of devicesWithoutRecentReadings) {
+            try {
+                if (!device.user?.email)
+                    continue;
+                const subject = 'هشدار عدم ارسال داده از دستگاه';
+                const message = `کاربر گرامی،
+
+دستگاه شما با شناسه ${device.deviceId}${device.name ? ` (${device.name})` : ''} در 24 ساعت گذشته هیچ داده‌ای ارسال نکرده است.
+لطفاً دستگاه را برای مشکل احتمالی بررسی کنید.
+
+با احترام`;
+                await this.notificationService.sendEmail(device.user.email, subject, message);
+                this.logger.warn(`Missing-reading alert queued/sent to ${device.user.email} for device ${device.deviceId}`);
+            }
+            catch (error) {
+                this.logger.error(`Failed to process missing-reading alert for device ${device.deviceId}`, error instanceof Error ? error.stack : String(error));
+            }
+        }
+    }
 };
 exports.DailySummaryService = DailySummaryService;
 __decorate([
@@ -108,10 +155,20 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], DailySummaryService.prototype, "generateDailySummaries", null);
-exports.DailySummaryService = DailySummaryService = __decorate([
+__decorate([
+    (0, schedule_1.Cron)(schedule_1.CronExpression.EVERY_DAY_AT_2AM),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], DailySummaryService.prototype, "notifyDevicesWithoutRecentReadings", null);
+exports.DailySummaryService = DailySummaryService = DailySummaryService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(daily_summary_entity_1.DailySummary)),
     __param(1, (0, typeorm_1.InjectRepository)(sensor_reading_entity_1.SensorReading)),
-    __metadata("design:paramtypes", [typeof (_a = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _a : Object, typeof (_b = typeof typeorm_2.Repository !== "undefined" && typeorm_2.Repository) === "function" ? _b : Object])
+    __param(2, (0, typeorm_1.InjectRepository)(device_entity_1.Device)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        notifications_service_1.NotificationsService])
 ], DailySummaryService);
 //# sourceMappingURL=daily-summary.service.js.map

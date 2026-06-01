@@ -7,7 +7,14 @@ import { Repository } from 'typeorm';
 import { User } from '@modules/users/entities/user.entity';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { Logger } from 'winston';
+import { Request } from 'express';
+const cookieExtractor = (req: Request): string | null => {
+  if (!req?.cookies) {
+    return null;
+  }
 
+  return req.cookies['access_token'] || null;
+};
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -16,7 +23,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private userRepository: Repository<User>,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      // jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        cookieExtractor,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('jwt.secret'),
       passReqToCallback: true

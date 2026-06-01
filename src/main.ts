@@ -8,10 +8,14 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import * as express from 'express';
 import { join } from 'path';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  // Get from cookie
+  app.use(cookieParser());
 
   // Database connection logging
   console.log('🔗 Database connection initiated...');

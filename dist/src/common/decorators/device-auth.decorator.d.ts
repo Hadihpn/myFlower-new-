@@ -1,1 +1,1 @@
-export declare const CurrentDevice: any;
+export declare const CurrentDevice: (...dataOrPipes: (string | import("@nestjs/common").PipeTransform<any, any> | import("@nestjs/common").Type<import("@nestjs/common").PipeTransform<any, any>>)[]) => ParameterDecorator;

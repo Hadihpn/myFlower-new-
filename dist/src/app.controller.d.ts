@@ -6,6 +6,6 @@ export declare class AppController {
     healthCheck(): {
         status: string;
         timestamp: string;
-        uptime: any;
+        uptime: number;
     };
 }
