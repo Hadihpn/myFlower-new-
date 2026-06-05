@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
@@ -30,7 +30,16 @@ async function bootstrap() {
 
   // Global prefix
   app.setGlobalPrefix('api', {
-    exclude: ['login', 'dashboard',"logout","register", '/'], // این مسیرها api نمیگیرند
+    // exclude: ['', 'login', 'dashboard', 'logout', 'register'], // این مسیرها api نمیگیرند
+    // exclude: ['login', 'dashboard',"logout","register", '/'], // این مسیرها api نمیگیرند
+     exclude: [
+    { path: '/', method: RequestMethod.GET },
+    { path: 'login', method: RequestMethod.ALL },
+    { path: 'dashboard', method: RequestMethod.ALL },
+    { path: 'logout', method: RequestMethod.ALL },
+    { path: 'register', method: RequestMethod.ALL },
+    { path: 'test', method: RequestMethod.ALL },
+  ],
   });
 
   // CORS
