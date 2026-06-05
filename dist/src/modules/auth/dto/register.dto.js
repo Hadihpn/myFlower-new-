@@ -38,7 +38,7 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: '+1234567890' }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.Matches)(/^\+?[1-9]\d{1,14}$/, {
+    (0, class_validator_1.Matches)(/^(?:\+98|0)?9\d{9}$/, {
         message: 'Please provide a valid phone number',
     }),
     __metadata("design:type", String)

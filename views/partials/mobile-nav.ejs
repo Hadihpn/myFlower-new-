@@ -1,0 +1,64 @@
+<nav class="mobile-nav d-lg-none">
+  <% const path = (typeof currentPath !== 'undefined') ? currentPath : '/'; %>
+
+  <% if (typeof user !== 'undefined' && user) { %>
+    <!-- حالت لاگین شده -->
+   پ
+<a href="/dashboard" class="nav-item <%= path === '/dashboard' ? 'active' : '' %>">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M3 10L12 3l9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>
+  </svg>
+  <span>خانه</span>
+</a>
+
+<a href="/plants" class="nav-item <%= path.startsWith('/plants') ? 'active' : '' %>">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M12 2C8 8 5 10 5 14a7 7 0 0 0 14 0c0-4-3-6-7-12z"/>
+  </svg>
+  <span>گیاهان</span>
+</a>
+
+<a href="/plants/add" class="nav-item nav-center">
+  <div class="center-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+      <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+    </svg>
+  </div>
+</a>
+
+<a href="/profile" class="nav-item <%= path.startsWith('/profile') ? 'active' : '' %>">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 3-9 6h18c0-3-4-6-9-6z"/>
+  </svg>
+  <span>پروفایل</span>
+</a>
+
+<form action="/api/auth/logout" method="POST" class="nav-item logout-form">
+  <button type="submit" class="logout-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <path d="M16 17l5-5-5-5"/>
+      <path d="M21 12H9"/>
+    </svg>
+    <span>خروج</span>
+  </button>
+</form>
+
+  <% } else { %>
+    <!-- حالت مهمان (لاگین نشده) -->
+    <a href="/" class="nav-item <%= path === '/' ? 'active' : '' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10L12 3l9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      <span>خانه</span>
+    </a>
+
+    <a href="/login" class="nav-item <%= path.startsWith('/login') ? 'active' : '' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13 12H3"/></svg>
+      <span>ورود</span>
+    </a>
+
+    <a href="/register" class="nav-item <%= path.startsWith('/register') ? 'active' : '' %>">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+      <span>ثبت‌نام</span>
+    </a>
+  <% } %>
+</nav>

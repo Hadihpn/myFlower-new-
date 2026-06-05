@@ -8,9 +8,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TransformInterceptor = void 0;
 const common_1 = require("@nestjs/common");
+const express_1 = require("express");
 const operators_1 = require("rxjs/operators");
 let TransformInterceptor = class TransformInterceptor {
     intercept(context, next) {
+        if (express_1.response?.render) {
+            return next.handle();
+        }
         return next.handle().pipe((0, operators_1.map)((data) => ({
             statusCode: context.switchToHttp().getResponse().statusCode,
             message: data?.message || 'Success',

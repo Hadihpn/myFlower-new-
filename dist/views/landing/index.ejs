@@ -1,0 +1,118 @@
+<style>
+  .hero-section {
+    /* تنظیمات اصلی برای اینکه تصویر همیشه مرتب باشد */
+    width: 100%;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    position: relative;
+
+    /* مهم: تنظیمات بک‌گراند */
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+      url('/uploads/mobile/plants/plant-banner-mobile.png');
+    background-size: cover; /* تصویر کل فضا را بپوشاند */
+    background-position: center center; /* تصویر همیشه از مرکز تنظیم شود */
+    background-repeat: no-repeat; /* تکرار نشود */
+  }
+
+  /* استایل برای دسکتاپ */
+  @media (min-width: 992px) {
+    .hero-section {
+      min-height: 100vh;
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('/uploads/desktop/plant/plant-banner-desktop.png');
+    }
+  }
+
+  /* اصلاح چیدمان دکمه‌ها در موبایل */
+  .hero-section .container {
+    z-index: 1;
+  }
+
+  .feature-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+
+  .feature-box:hover {
+    transform: translateY(-5px);
+  }
+</style>
+<div class="position-absolute top-0 end-0 p-3 d-flex align-items-center gap-2 z-3">
+
+  <!-- <% if (user) { %> -->
+
+    <!-- <a href="/dashboard" class="d-flex align-items-center text-white text-decoration-none">
+      
+      <span class="me-2 fw-semibold"><%= user["fullName"] %></span>
+      <img 
+        src="<%= user.avatar || '/uploads/default/profile.png' %>" 
+        alt="profile"
+        style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #fff;"
+      />
+
+    </a> -->
+    <%- include('../partials/header') %>
+
+
+  <!-- <% } %> -->
+
+</div>
+<section class="hero-section text-center">
+  <div class="container">
+    <h1 class="display-5 fw-bold mb-3">سیستم هوشمند مانیتورینگ گیاهان 🌿</h1>
+
+    <p class="lead">سلامت گیاهان خود را با سنسورهای هوشمند و تحلیل داده مدیریت کنید.</p>
+    <% if (!user) { %>
+    <div class=" d-none d-md-flex gap-2  justify-content-center ">
+      <a href="/login" class="btn btn-outline-light  btn-lg mx-2">ورود</a>
+      <a href="/register" class="btn btn-outline-light btn-lg mx-2">ثبت‌نام</a>
+    </div>
+    
+    <% } %>
+  </div>
+</section>
+
+<section class="py-5 bg-light">
+  <div class="container text-center ">
+    <h2 class="mb-5">ویژگی‌های سیستم</h2>
+
+    <div class="row g-4">
+      <div class="col-12 col-md-4">
+        <div class="feature-box">
+          <h4>📡 پایش لحظه‌ای</h4>
+          <p>دریافت اطلاعات رطوبت، دما و نور به صورت زنده.</p>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="feature-box">
+          <h4>📊 تحلیل هوشمند</h4>
+          <p>ارائه پیشنهادات مراقبتی مبتنی بر داده.</p>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="feature-box">
+          <h4>🌱 مدیریت چند گیاه</h4>
+          <p>مدیریت همزمان چندین گلدان و دستگاه.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<% if (!user) { %>
+<div class="mobile-auth-bar d-md-none">
+  <a href="/login" class="btn btn-light w-50">ورود</a>
+  <a href="/register" class="btn btn-success w-50">ثبت‌نام</a>
+</div>
+<% } %>

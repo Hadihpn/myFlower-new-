@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import configuration from './config/configuration';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -34,6 +34,9 @@ import { CareTaskFeedbackModule } from './modules/care-task-feedback/care-task-f
 import { ScheduleModule } from '@nestjs/schedule';
 // import { CareScheduleModule } from './modules/careSchedules/care-schedule.module';
 import { LlmService } from './llm/llm.service';
+import { WebModule } from './modules/web/web.module';
+import { WebJwtAuthGuard } from './common/guards/web-jwt-auth.guard';
+import { UserInterceptor } from './common/interceptors/user.interceptor';
 
 @Module({
   imports: [
@@ -95,7 +98,8 @@ import { LlmService } from './llm/llm.service';
     DailySummaryModule,
     CarePlanModule,
     CareTaskModule,
-    CareTaskFeedbackModule
+    CareTaskFeedbackModule,
+    WebModule
     // CareScheduleModule
   ],
   controllers: [AppController],
@@ -106,9 +110,17 @@ import { LlmService } from './llm/llm.service';
       useClass: JwtAuthGuard,
     },
     {
+    provide: APP_GUARD,
+    useClass: WebJwtAuthGuard,
+  },
+    {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+     {
+    provide: APP_INTERCEPTOR,
+    useClass: UserInterceptor,
+  },
     LlmService,
   ],
 })

@@ -8,12 +8,12 @@ import { Public } from './common/decorators/public.decorator';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Public()
-  @Get()
-  @ApiOperation({ summary: 'Health check' })
-  getHello(): string {
-    return this.appService.getHello();
-  }
+  // @Public()
+  // @Get()
+  // @ApiOperation({ summary: 'Health check' })
+  // getHello(): string {
+  //   return this.appService.getHello();
+  // }
 
   @Public()
   @Get('health')

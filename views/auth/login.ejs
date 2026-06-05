@@ -1,0 +1,43 @@
+<style>
+    @media (min-width: 992px) {
+    .login-page-wrapper {
+      min-height: 100vh;
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('/uploads/desktop/plant/plant-banner-desktop.png');
+    }
+  }
+</style>
+
+<!-- در موبایل کل صفحه بک‌گراند است -->
+<div class="login-page-wrapper">
+
+  <div class="glass-card">
+    <div class="text-center mb-4">
+      <h3 class="fw-bold text-light">ورود به سیستم</h3>
+      <!-- <p class="text-light">به گل‌هایتان برسید</p> -->
+    </div>
+<% if (success) { %>
+  <div class="alert alert-success text-center" style="margin-bottom:20px;">
+    <%= success %>
+  </div>
+<% } %>
+
+    <form method="POST" action="/api/auth/login">
+      <!-- ورودی‌ها همان طراحی قبلی اما با شفافیت -->
+      <div class="mb-3">
+        <input type="email" name="email"  value="<%= email || '' %>"class="form-control bg-transparent border-light" placeholder="ایمیل" required>
+      </div>
+      <div class="mb-4">
+        <input type="password" name="password" class="form-control bg-transparent border-light" placeholder="رمز عبور" required minlength="8" >
+      </div>
+        <% if (error) { %>
+  <div class="alert alert-danger text-center" style="margin-bottom: 20px;">
+    <%= error %>
+  </div>
+<% } %>
+      <button class="btn btn-success w-100 rounded-pill py-2">ورود</button>
+    </form>
+  </div>
+
+</div>

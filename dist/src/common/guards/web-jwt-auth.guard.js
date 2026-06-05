@@ -8,37 +8,44 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var JwtAuthGuard_1;
+var WebJwtAuthGuard_1;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JwtAuthGuard = void 0;
+exports.WebJwtAuthGuard = void 0;
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
 const passport_1 = require("@nestjs/passport");
 const public_decorator_1 = require("../decorators/public.decorator");
-let JwtAuthGuard = JwtAuthGuard_1 = class JwtAuthGuard extends (0, passport_1.AuthGuard)('jwt') {
+let WebJwtAuthGuard = WebJwtAuthGuard_1 = class WebJwtAuthGuard extends (0, passport_1.AuthGuard)('jwt') {
     constructor(reflector) {
         super();
         this.reflector = reflector;
-        this.logger = new common_1.Logger(JwtAuthGuard_1.name);
+        this.logger = new common_1.Logger(WebJwtAuthGuard_1.name);
     }
     canActivate(context) {
+        const request1 = context.switchToHttp().getRequest();
+        console.log('isActivate');
         const isPublic = this.reflector.getAllAndOverride(public_decorator_1.IS_PUBLIC_KEY, [
             context.getHandler(),
             context.getClass(),
         ]);
-        if (isPublic) {
-            return true;
-        }
         return super.canActivate(context);
     }
     handleRequest(err, user, info, context) {
-        console.log('err:', err);
-        console.log('user:', user);
-        console.log('info:', info?.message);
-        const { req, res } = context.switchToHttp().getRequest();
-        if (err || !user) {
-            console.log('error', err);
-            const currentUrl = req.originalUrl || req.url || '/';
+        const req = context.switchToHttp().getRequest();
+        const res = context.switchToHttp().getResponse();
+        const currentUrl = req.originalUrl || req.url || '/';
+        const isPublic = this.reflector.getAllAndOverride(public_decorator_1.IS_PUBLIC_KEY, [
+            context.getHandler(),
+            context.getClass(),
+        ]);
+        if (err) {
+            throw err;
+        }
+        console.log('req.user', user);
+        if (isPublic) {
+            return user || null;
+        }
+        if (!user) {
             if (!currentUrl.startsWith('/login')) {
                 const next = encodeURIComponent(currentUrl);
                 res.redirect(`/login?next=${next}`);
@@ -48,9 +55,9 @@ let JwtAuthGuard = JwtAuthGuard_1 = class JwtAuthGuard extends (0, passport_1.Au
         return user;
     }
 };
-exports.JwtAuthGuard = JwtAuthGuard;
-exports.JwtAuthGuard = JwtAuthGuard = JwtAuthGuard_1 = __decorate([
+exports.WebJwtAuthGuard = WebJwtAuthGuard;
+exports.WebJwtAuthGuard = WebJwtAuthGuard = WebJwtAuthGuard_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [core_1.Reflector])
-], JwtAuthGuard);
+], WebJwtAuthGuard);
 //# sourceMappingURL=web-jwt-auth.guard.js.map

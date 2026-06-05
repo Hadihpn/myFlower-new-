@@ -9,9 +9,14 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import * as express from 'express';
 import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
+import { NestExpressApplication } from '@nestjs/platform-express';
+// import ejsLayouts =require('express-ejs-layouts');
+import * as expressLayouts from 'express-ejs-layouts';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
   const configService = app.get(ConfigService);
 
   // Get from cookie
@@ -24,7 +29,9 @@ async function bootstrap() {
   );
 
   // Global prefix
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: ['login', 'dashboard',"logout","register", '/'], // این مسیرها api نمیگیرند
+  });
 
   // CORS
   app.enableCors({
@@ -52,6 +59,11 @@ async function bootstrap() {
 
   // Global interceptors
   app.useGlobalInterceptors(new LoggingInterceptor(), new TransformInterceptor());
+
+  app.setViewEngine('ejs');
+  app.setBaseViewsDir(join(__dirname, '..', 'views'));
+  app.use(expressLayouts);
+app.set('layout', 'layouts/layout');
 
   // Swagger documentation
   const config = new DocumentBuilder()
@@ -104,7 +116,8 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get<number>('port') || 3000;
-  await app.listen(3000, '0.0.0.0');
+  // await app.listen(3000, '0.0.0.0');
+  await app.listen(port, '0.0.0.0');
 
   console.log(`🚀 Application is running on: http://localhost:${port}`);
   console.log(`✅ Database connected successfully!`);

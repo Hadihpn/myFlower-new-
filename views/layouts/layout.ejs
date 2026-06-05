@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <title><%= title || "MyFlower App" %></title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap RTL -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        margin: 0 !important;
+        font-family: sans-serif;
+        background: #f6f6f6;
+      }
+      .features-overlap {
+        margin-top: -50px; /* بخش را ۵۰ پیکسل به بالا می‌کشد */
+        border-top-left-radius: 40px; /* گرد کردن گوشه بالا سمت چپ */
+        border-top-right-radius: 40px; /* گرد کردن گوشه بالا سمت راست */
+        position: relative;
+        z-index: 10; /* مطمئن شو همیشه روی عکس است */
+        padding-top: 60px; /* فضای داخلی برای جبران منفی بودن مارجین */
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1); /* سایه ملایم برای جدا شدن از عکس */
+      }
+      .mobile-auth-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        gap: 10px;
+        padding: 10px;
+        background: white;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      .login-container {
+        height: 100vh;
+      }
+
+      /* استایل اینپوت‌ها: مینیمال و بدون حاشیه مزاحم */
+      .form-control {
+        border-radius: 12px;
+        padding: 15px 20px;
+        transition: all 0.3s;
+      }
+      .form-control:focus {
+        box-shadow: none;
+        background: #eef2ed !important; /* یک ته رنگ سبز بسیار ملایم */
+        border: 1px solid #a8c69f !important;
+      }
+
+      /* بخش عکس سمت راست (دسکتاپ) */
+      .login-side-image {
+        background: url('/uploads/desktop/plant/plant-banner-desktop.png') center/cover no-repeat;
+        position: relative;
+      }
+      .login-side-image .overlay {
+        position: absolute;
+        bottom: 40px;
+        right: 40px;
+        color: white;
+      }
+
+      /* دکمه اختصاصی */
+      .btn-success {
+        background-color: #2d5a27 !important; /* سبز یشمی/طبیعی */
+        transition: transform 0.2s;
+      }
+      .btn-success:hover {
+        transform: scale(1.02);
+      }
+      /* استایل کلی برای پس‌زمینه */
+      .login-page-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* عکس گیاهان برای پس‌زمینه */
+        background: url('/uploads/mobile/plants/plant-banner-mobile.png') no-repeat center center /
+          cover;
+        padding: 20px;
+      }
+
+      /* کارت شیشه‌ای (Glassmorphism) */
+      .glass-card {
+        width: 100%;
+        max-width: 400px;
+        background: rgba(255, 255, 255, 0.2); /* سفید نیمه‌شفاف */
+        backdrop-filter: blur(15px); /* اینجا افکت بلور ایجاد می‌شود */
+        -webkit-backdrop-filter: blur(15px); /* برای سازگاری با سافاری */
+        border: 1px solid rgba(255, 255, 255, 0.685);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+      }
+
+      /* ورودی‌های فرم برای همخوانی با استایل شیشه‌ای */
+      .glass-card .form-control {
+        border: 1px solid rgba(255, 255, 255, 1) !important;
+        color: #ffffff;
+        border-radius: 12px;
+      }
+
+      .glass-card .form-control::placeholder {
+        color: #ffffff;
+      }
+
+      .glass-card .form-control:focus::placeholder {
+        color: #080808;
+      }
+
+      .glass-card .form-control:focus {
+        color: #000000;
+      }
+      .mobile-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        height: 75px;
+        background: #ffffff;
+
+        display: none; /* پیشفرض مخفی */
+        justify-content: space-around;
+        align-items: center;
+
+        border-top: 1px solid #ddd;
+        z-index: 9999;
+      }
+
+      .mobile-nav .nav-item {
+        flex: 1;
+        text-align: center;
+        text-decoration: none;
+        color: #333;
+        font-size: 12px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mobile-nav svg {
+        width: 22px;
+        height: 22px;
+        stroke: #333;
+      }
+
+      .mobile-nav .nav-item.active {
+        color: #198754;
+      }
+
+      .mobile-nav .nav-item:active {
+        transform: scale(0.95);
+      }
+
+      .nav-center {
+        position: relative;
+        top: -20px;
+      }
+
+      .center-btn {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+
+        background: linear-gradient(135deg, #198754, #20c997);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+
+        transition: 0.2s;
+      }
+
+      .center-btn:hover {
+        transform: scale(1.05);
+      }
+      .logout-form {
+        flex: 1;
+        margin: 0;
+      }
+
+      .logout-btn {
+        background: none;
+        border: none;
+        width: 100%;
+        height: 100%;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        color: #666;
+        font-size: 11px;
+      }
+      @media (max-width: 992px) {
+        .mobile-nav {
+          display: flex;
+        }
+        body {
+          padding-bottom: 85px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <%- include('../partials/mobile-nav') %> <%- body %>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -11,13 +11,16 @@ const transform_interceptor_1 = require("./common/interceptors/transform.interce
 const express = require("express");
 const path_1 = require("path");
 const cookieParser = require("cookie-parser");
+const expressLayouts = require("express-ejs-layouts");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const configService = app.get(config_1.ConfigService);
     app.use(cookieParser());
     console.log('🔗 Database connection initiated...');
     console.log(`📊 Connected to: ${configService.get('database.host')}:${configService.get('database.port')}/${configService.get('database.database')}`);
-    app.setGlobalPrefix('api');
+    app.setGlobalPrefix('api', {
+        exclude: ['login', 'dashboard', "logout", "register", '/'],
+    });
     app.enableCors({
         origin: true,
         credentials: true,
@@ -33,6 +36,10 @@ async function bootstrap() {
     }));
     app.useGlobalFilters(new all_exceptions_filter_1.AllExceptionsFilter());
     app.useGlobalInterceptors(new logging_interceptor_1.LoggingInterceptor(), new transform_interceptor_1.TransformInterceptor());
+    app.setViewEngine('ejs');
+    app.setBaseViewsDir((0, path_1.join)(__dirname, '..', 'views'));
+    app.use(expressLayouts);
+    app.set('layout', 'layouts/layout');
     const config = new swagger_1.DocumentBuilder()
         .setTitle('Plant Monitoring System API')
         .setDescription('IoT-based Plant Monitoring and Care Advice System')
@@ -72,7 +79,7 @@ async function bootstrap() {
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api/docs', app, document);
     const port = configService.get('port') || 3000;
-    await app.listen(3000, '0.0.0.0');
+    await app.listen(port, '0.0.0.0');
     console.log(`🚀 Application is running on: http://localhost:${port}`);
     console.log(`✅ Database connected successfully!`);
     console.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);

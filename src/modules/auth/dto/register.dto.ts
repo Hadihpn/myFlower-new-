@@ -28,7 +28,7 @@ export class RegisterDto {
   @ApiPropertyOptional({ example: '+1234567890' })
   @IsOptional()
   @IsString()
-  @Matches(/^\+?[1-9]\d{1,14}$/, {
+  @Matches(/^(?:\+98|0)?9\d{9}$/, {
     message: 'Please provide a valid phone number',
   })
   phoneNumber?: string;

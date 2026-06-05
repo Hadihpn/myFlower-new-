@@ -37,6 +37,9 @@ const care_task_module_1 = require("./modules/care-task/care-task.module");
 const care_task_feedback_module_1 = require("./modules/care-task-feedback/care-task-feedback.module");
 const schedule_1 = require("@nestjs/schedule");
 const llm_service_1 = require("./llm/llm.service");
+const web_module_1 = require("./modules/web/web.module");
+const web_jwt_auth_guard_1 = require("./common/guards/web-jwt-auth.guard");
+const user_interceptor_1 = require("./common/interceptors/user.interceptor");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -94,7 +97,8 @@ exports.AppModule = AppModule = __decorate([
             daily_summary_module_1.DailySummaryModule,
             care_plan_module_1.CarePlanModule,
             care_task_module_1.CareTaskModule,
-            care_task_feedback_module_1.CareTaskFeedbackModule
+            care_task_feedback_module_1.CareTaskFeedbackModule,
+            web_module_1.WebModule
         ],
         controllers: [app_controller_1.AppController],
         providers: [
@@ -105,7 +109,15 @@ exports.AppModule = AppModule = __decorate([
             },
             {
                 provide: core_1.APP_GUARD,
+                useClass: web_jwt_auth_guard_1.WebJwtAuthGuard,
+            },
+            {
+                provide: core_1.APP_GUARD,
                 useClass: throttler_2.ThrottlerGuard,
+            },
+            {
+                provide: core_1.APP_INTERCEPTOR,
+                useClass: user_interceptor_1.UserInterceptor,
             },
             llm_service_1.LlmService,
         ],

@@ -25,31 +25,39 @@ let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
     }
-    async register(registerDto) {
+    async register(registerDto, res) {
         try {
-            return this.authService.register(registerDto);
+            await this.authService.register(registerDto);
+            return res.redirect(`/login?status=registered`);
         }
         catch (error) {
             console.log(error);
         }
     }
     async login(loginDto, res) {
-        const { accessToken, refreshToken } = await this.authService.login(loginDto);
-        res.cookie('access_token', accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
-            maxAge: 15 * 60 * 1000,
-        });
-        res.cookie('refresh_token', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/api/auth/refresh',
-            maxAge: 30 * 24 * 60 * 60 * 1000,
-        });
-        return { accessToken };
+        console.log(login_dto_1.LoginDto);
+        try {
+            const { accessToken, refreshToken } = await this.authService.login(loginDto);
+            res.cookie('access_token', accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/',
+                maxAge: 15 * 60 * 1000,
+            });
+            res.cookie('refresh_token', refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/api/auth/refresh',
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+            });
+            return res.redirect('/');
+        }
+        catch (error) {
+            const email = encodeURIComponent(loginDto.email);
+            return res.redirect(`/login?error=invalid&email=${email}`);
+        }
     }
     async refresh(req, res) {
         const refreshToken = req.cookies?.refresh_token;
@@ -79,7 +87,7 @@ let AuthController = class AuthController {
     logout(res) {
         res.clearCookie('access_token', { path: '/' });
         res.clearCookie('refresh_token', { path: '/api/auth/refresh' });
-        return { ok: true };
+        return res.redirect('/');
     }
 };
 exports.AuthController = AuthController;
@@ -90,8 +98,9 @@ __decorate([
     (0, swagger_1.ApiResponse)({ status: 201, description: 'User registered successfully' }),
     (0, swagger_1.ApiResponse)({ status: 409, description: 'User already exists' }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [register_dto_1.RegisterDto]),
+    __metadata("design:paramtypes", [register_dto_1.RegisterDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
 __decorate([

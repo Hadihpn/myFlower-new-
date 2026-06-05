@@ -3,14 +3,25 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-      "assets": [
+    "assets": [
       {
         "include": "**/**/*.hbs",
         "outDir": "dist/src"
+      },
+      {
+        "include": "views/**/*.ejs",
+        "outDir": "dist"
+      },
+      {
+        "include": "../views/**/*",
+        "outDir": "dist/views"
+      },
+      {
+        "include": "../uploads/**/*",
+        "outDir": "dist/uploads"
       }
     ],
     "deleteOutDir": true,
     "webpack": false
   }
-  
 }
