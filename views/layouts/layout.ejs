@@ -105,7 +105,26 @@
         padding: 40px;
         box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
       }
-
+ .chart-glass-card {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.2); /* سفید نیمه‌شفاف */
+        backdrop-filter: blur(15px); /* اینجا افکت بلور ایجاد می‌شود */
+        -webkit-backdrop-filter: blur(15px); /* برای سازگاری با سافاری */
+        border: 1px solid rgba(255, 255, 255, 0.685);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+      }
+      .card-dash {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.685);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
       /* ورودی‌های فرم برای همخوانی با استایل شیشه‌ای */
       .glass-card .form-control {
         border: 1px solid rgba(255, 255, 255, 1) !important;
@@ -218,11 +237,64 @@
           padding-bottom: 85px;
         }
       }
+      .desktop-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+
+        height: 72px;
+        z-index: 9999;
+
+            background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(14px);
+
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      }
+
+      .desktop-logo {
+        color: #198754;
+        font-size: 20px;
+      }
+
+      .desktop-link {
+        color: #333;
+        text-decoration: none;
+        font-weight: 500;
+        transition: 0.2s;
+      }
+
+      .desktop-link:hover {
+        color: #198754;
+      }
+
+      .desktop-link.active {
+        color: #198754;
+        font-weight: 700;
+      }
+
+      .desktop-user {
+        color: #222;
+      }
+
+      .desktop-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #198754;
+      }
+      @media (min-width: 992px) {
+        body {
+          padding-top: 72px;
+        }
+      }
     </style>
   </head>
 
   <body>
-    <%- include('../partials/mobile-nav') %> <%- body %>
+    <%- include('../partials/desktop-nav') %> <%- include('../partials/mobile-nav') %> <%- body %>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

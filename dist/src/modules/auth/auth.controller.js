@@ -43,14 +43,14 @@ let AuthController = class AuthController {
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
                 path: '/',
-                maxAge: 15 * 60 * 1000,
+                maxAge: 15 * 30 * 30 * 60 * 1000,
             });
             res.cookie('refresh_token', refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',
                 path: '/api/auth/refresh',
-                maxAge: 30 * 24 * 60 * 60 * 1000,
+                maxAge: 30 * 30 * 24 * 60 * 60 * 1000,
             });
             return res.redirect('/');
         }

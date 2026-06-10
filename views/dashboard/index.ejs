@@ -1,0 +1,179 @@
+<div class="container-fluid py-4">
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-1">سلام <%= user?.fullName || "کاربر" %> 👋</h4>
+      <small class="text-muted">به پنل مدیریت گیاهان خوش آمدید</small>
+    </div></div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="card-dash text-center">
+        <div class="mb-2">🌱</div>
+        <h6>گیاهان</h6>
+        <h4 id="plants-count">0</h4>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-dash text-center">
+        <div class="mb-2">📟</div>
+        <h6>دستگاه‌ها</h6>
+        <h4 id="devices-count">0</h4>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="card-dash text-center">
+        <div class="mb-2">✅</div>
+        <h6>تسک امروز</h6>
+        <h4 id="tasks-count">0</h4>
+      </div>
+    </div>
+
+  <!-- MAIN GRID: Plants + Tasks -->
+  <div class="row g-4 mb-4">
+    <!-- PLANTS -->
+    <div class="col-12 col-lg-8">
+      <div class="card-dash h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">گیاهان من</h5>
+          <button class="btn btn-sm btn-success">افزودن</button>
+        </div>
+        <div class="row g-3" id="plants-container"></div>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="col-12 col-lg-4">
+      <div class="card-dash h-100">
+        <h5 class="mb-3">کارهای امروز</h5>
+        <ul class="list-group list-group-flush" id="tasks-list"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SENSOR CHART - full width -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card-dash">
+        <h5 class="mb-3">وضعیت سنسورها (۷ روز اخیر)</h5>
+        <canvas id="sensorChart" height="80"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  async function loadDashboard() {
+    const res = await fetch('/api/getDashboardData', {
+      credentials: 'include',
+    });
+
+    const data = await res.json();
+
+    renderSummary(data);
+    renderPlants(data.plants);
+    renderTasks(data.todayTasks);
+    renderChart(data.devices);
+    //  deviceCount: devices.length,
+    //     devices: devices$,
+    //     todayTasks,
+  }
+
+  function renderSummary(data) {
+    document.getElementById('plants-count').innerText = data.plants.length;
+    document.getElementById('devices-count').innerText = data.deviceCount;
+    document.getElementById('tasks-count').innerText = data.todayTasks.length;
+    // document.getElementById('humidity').innerText = data.humidity + '%';
+  }
+
+  function renderPlants(plants) {
+    const container = document.getElementById('plants-container');
+    container.innerHTML = '';
+
+    plants.forEach((p) => {
+      const html = `
+      <div class="col-6 col-lg-3">
+    <div class="p-3 border rounded bg-white">
+      <img src="${p.imageUrl}" alt="${p.name}" class="img-fluid rounded mb-2">
+      <h6>${p.name}</h6>
+    </div>
+  </div>
+      `;
+
+      container.innerHTML += html;
+    });
+  }
+
+  function renderTasks(tasks) {
+    const list = document.getElementById('tasks-list');
+    list.innerHTML = '';
+
+    tasks.forEach((t) => {
+      const li = document.createElement('li');
+
+      li.className = 'list-group-item d-flex align-items-center';
+
+      li.innerHTML = `
+        <input type="checkbox" class="form-check-input me-2">
+        ${t.taskType}
+      `;
+
+      list.appendChild(li);
+    });
+  }
+  function renderChart(devices) {
+    const ctx = document.getElementById('sensorChart');
+    const chartData = buildChartData(devices);
+    if (!chartData) return;
+
+    new Chart(ctx, {
+      type: 'line',
+      data: chartData,
+      options: {
+        plugins: {
+          legend: { position: 'bottom' },
+        },
+      },
+    });
+  }
+
+  const DEVICE_COLORS = ['#20c997', '#ff6384', '#36a2eb', '#ffce56', '#9966ff'];
+
+  function buildChartData(devices) {
+    if (!devices?.length) return null;
+
+    // از readings اولین device برچسب زمانی می‌گیریم (همه devices بازه یکسانی دارند)
+    const labels = devices[0].latestReadings
+      .map((r) => new Date(r.timestamp).toLocaleDateString())
+      .reverse(); 
+
+    const datasets = [];
+
+    devices.forEach((device, i) => {
+      const color = DEVICE_COLORS[i % DEVICE_COLORS.length];
+      const readings = [...device.latestReadings].reverse(); // ASC برای chart
+
+      datasets.push({
+        label: `${device.name} – Humidity`,
+        data: readings.map((r) => r.humidity),
+        borderColor: color,
+        backgroundColor: color + '33',
+        tension: 0.4,
+      });
+
+      datasets.push({
+        label: `${device.name} – Temperature`,
+        data: readings.map((r) => r.temperature),
+        borderColor: color,
+        borderDash: [5, 5], // خط‌چین برای تمایز temp از humidity
+        tension: 0.4,
+      });
+    });
+
+    return { labels, datasets };
+  }
+  loadDashboard();
+</script>

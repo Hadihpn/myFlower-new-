@@ -16,12 +16,16 @@ exports.WebController = void 0;
 const common_1 = require("@nestjs/common");
 const public_decorator_1 = require("../../common/decorators/public.decorator");
 const web_jwt_auth_guard_1 = require("../../common/guards/web-jwt-auth.guard");
+const web_service_1 = require("./web.service");
 let WebController = class WebController {
+    constructor(webservice) {
+        this.webservice = webservice;
+    }
     getLoginPage(req, res) {
         if (req.cookies?.access_token) {
             return res.redirect('/dashboard');
         }
-        console.log("req.query", req.query.status);
+        console.log('req.query', req.query.status);
         const success = req.query.status === 'registered' ? 'ثبت‌نام با موفقیت انجام شد. حالا وارد شوید.' : null;
         const error = req.query.error === 'invalid'
             ? 'ایمیل یا رمز عبور اشتباه است'
@@ -36,12 +40,21 @@ let WebController = class WebController {
         }
         return { title: 'ثبت نام' };
     }
-    getDashboard(req) {
-        console.log('panel', req.user);
-        return {
-            title: 'پنل کاربری',
-            user: req.user,
-        };
+    async getDashboard(req) {
+        console.log('dashboard::');
+        const user = req.user;
+        if (user) {
+            return { title: 'داشبورد', user, currentPath: '/dashboard' };
+        }
+    }
+    async getDashboardData(req) {
+        console.log('dashboard::');
+        const user = req.user;
+        if (user) {
+            const result = await this.webservice.getUserDashboard(user.id);
+            console.log("resultttt", result);
+            return result;
+        }
     }
     landing(req) {
         console.log('panel', req.user);
@@ -82,8 +95,16 @@ __decorate([
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], WebController.prototype, "getDashboard", null);
+__decorate([
+    (0, common_1.UseGuards)(web_jwt_auth_guard_1.WebJwtAuthGuard),
+    (0, common_1.Get)('getDashboardData'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], WebController.prototype, "getDashboardData", null);
 __decorate([
     (0, public_decorator_1.Public)(),
     (0, common_1.Get)('/'),
@@ -101,6 +122,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], WebController.prototype, "test", null);
 exports.WebController = WebController = __decorate([
-    (0, common_1.Controller)()
+    (0, common_1.Controller)(),
+    __metadata("design:paramtypes", [web_service_1.WebService])
 ], WebController);
 //# sourceMappingURL=web.controller.js.map

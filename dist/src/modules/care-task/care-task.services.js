@@ -83,11 +83,12 @@ let CareTaskService = class CareTaskService {
         console.log('🎯 Protected Route Handler Executed: getTodayTasks');
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log('User ID from request: ', userId);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        return await this.careTaskRepo
+        const now = new Date();
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+        console.log("today", today);
+        console.log("tomorrow", tomorrow);
+        const res = await this.careTaskRepo
             .createQueryBuilder('task')
             .innerJoin('task.carePlan', 'plan')
             .innerJoin('plan.userPlantSelection', 'selection')
@@ -95,10 +96,11 @@ let CareTaskService = class CareTaskService {
             .where('user.id = :userId', { userId })
             .andWhere('task.scheduledDate >= :today', { today })
             .andWhere('task.scheduledDate < :tomorrow', { tomorrow })
-            .andWhere('task.status = :status', { status: taskStatus_enum_1.TaskStatus.PENDING })
             .orderBy('task.optimalTime', 'ASC')
             .addOrderBy('task.scheduledDate', 'ASC')
             .getMany();
+        console.log("Ressss", res);
+        return res;
     }
     async getTaskUserId(taskId) {
         return await this.careTaskRepo

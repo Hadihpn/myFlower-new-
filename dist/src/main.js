@@ -19,7 +19,14 @@ async function bootstrap() {
     console.log('🔗 Database connection initiated...');
     console.log(`📊 Connected to: ${configService.get('database.host')}:${configService.get('database.port')}/${configService.get('database.database')}`);
     app.setGlobalPrefix('api', {
-        exclude: ['login', 'dashboard', "logout", "register", '/'],
+        exclude: [
+            { path: '/', method: common_1.RequestMethod.GET },
+            { path: 'login', method: common_1.RequestMethod.ALL },
+            { path: 'dashboard', method: common_1.RequestMethod.ALL },
+            { path: 'logout', method: common_1.RequestMethod.ALL },
+            { path: 'register', method: common_1.RequestMethod.ALL },
+            { path: 'test', method: common_1.RequestMethod.ALL },
+        ],
     });
     app.enableCors({
         origin: true,

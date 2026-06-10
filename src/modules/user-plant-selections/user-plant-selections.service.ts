@@ -91,17 +91,29 @@ export class UserPlantSelectionsService {
   }
 
   async getUserSelections(userId: number): Promise<UserPlantSelection[]> {
-    return this.selectionRepository.find({
-      where: { userId, active: true },
-      relations: [
-        'device',
-        'package',
-        'package.items',
-        'package.items.plantSpecies',
-        'plantSpecies',
-      ],
-      order: { createdAt: 'DESC' },
-    });
+    // return await this.selectionRepository.find({
+    //   where: { userId, active: true },
+    //   relations: [
+    //     'device',
+    //     'package',
+    //     'package.items',
+    //     'package.items.plantSpecies',
+    //     'plantSpecies',
+    //   ],
+    //   order: { createdAt: 'DESC' },
+    // });
+     const x =  await this.selectionRepository
+    .createQueryBuilder('s')
+    // .leftJoinAndSelect('s.device', 'device')
+    .leftJoinAndSelect('s.plantSpecies', 'species')
+    .leftJoinAndSelect('s.package', 'pkg')
+    .leftJoinAndSelect('pkg.items', 'items', 's.packageId IS NOT NULL')
+    .leftJoinAndSelect('items.plantSpecies', 'itemSpecies', 's.packageId IS NOT NULL')
+    .where('s.userId = :userId AND s.active = true', { userId })
+    .orderBy('s.createdAt', 'DESC')
+    .getMany();
+    console.log("xxxxxx",x)
+    return x
   }
 
   async getDeviceSelections(userId: number, deviceId: string): Promise<UserPlantSelection[]> {

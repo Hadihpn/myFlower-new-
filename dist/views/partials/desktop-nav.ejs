@@ -1,0 +1,57 @@
+<nav class="desktop-nav d-none d-lg-flex align-items-center justify-content-between px-5 py-3">
+  <% const path = (typeof currentPath !== 'undefined') ? currentPath : '/'; %>
+
+  <div class="d-flex align-items-center gap-4">
+    <a href="/" class="desktop-logo text-decoration-none fw-bold">
+      🌿 MyFlower
+    </a>
+
+    <a href="/" class="desktop-link <%= path === '/' ? 'active' : '' %>">
+      خانه
+    </a>
+
+    <% if (user) { %>
+      <a href="/dashboard" class="desktop-link <%= path === '/dashboard' ? 'active' : '' %>">
+        داشبورد
+      </a>
+
+      <a href="/plants" class="desktop-link <%= path.startsWith('/plants') ? 'active' : '' %>">
+        گیاهان
+      </a>
+    <% } %>
+  </div>
+
+  <div class="d-flex align-items-center gap-3">
+    <% if (user) { %>
+
+      <a href="/profile" class="d-flex align-items-center gap-2 text-decoration-none desktop-user">
+        <span class="fw-semibold">
+          <%= user.fullName || user.name || 'کاربر' %>
+        </span>
+
+        <img
+          src="<%= user.avatar || '/uploads/default/profile.png' %>"
+          alt="profile"
+          class="desktop-avatar"
+        />
+      </a>
+
+      <form action="/api/auth/logout" method="POST" class="m-0">
+        <button type="submit" class="btn btn-sm btn-outline-danger">
+          خروج
+        </button>
+      </form>
+
+    <% } else { %>
+
+      <a href="/login" class="btn btn-outline-success">
+        ورود
+      </a>
+
+      <a href="/register" class="btn btn-success">
+        ثبت‌نام
+      </a>
+
+    <% } %>
+  </div>
+</nav>

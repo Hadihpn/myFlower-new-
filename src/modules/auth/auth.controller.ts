@@ -53,14 +53,14 @@
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
           path: '/',
-          maxAge: 15 * 60 * 1000,
+          maxAge: 15*30*30 * 60 * 1000,
         });
         res.cookie('refresh_token', refreshToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax', // برای اکثر حالت‌ها خوبه
           path: '/api/auth/refresh', // فقط به refresh ارسال شود (محدودسازی خوب)
-          maxAge: 30 * 24 * 60 * 60 * 1000, // مثال: 30 روز
+          maxAge: 30*30 * 24 * 60 * 60 * 1000, // مثال: 30 روز
         });
         // return { accessToken };
         return res.redirect('/');

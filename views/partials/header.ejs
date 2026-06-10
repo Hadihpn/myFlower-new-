@@ -1,10 +1,21 @@
 <nav class="mobile-nav d-lg-none">
   <% const path = (typeof currentPath !== 'undefined') ? currentPath : '/'; %>
 
-  <% if (typeof user !== 'undefined' && user) { %>
-   
-<a href="/dashboard" class="nav-item <%= path === '/dashboard' ? 'active' : '' %>">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <% if (  user) { %>
+   <nav class="navbar navbar-dark d-none d-lg-flex px-4 py-2 position-fixed top-0 w-100" 
+     style="background:rgba(0,0,0,0.4);backdrop-filter:blur(8px);z-index:9999;">
+  <a href="/dashboard" class="navbar-brand text-white">🌿 MyFlower</a>
+  <div class="d-flex align-items-center gap-3">
+    <a href="/dashboard" class="text-white text-decoration-none">خانه</a>
+    <a href="/plants" class="text-white text-decoration-none">گیاهان</a>
+    <a href="/profile" class="text-white text-decoration-none">پروفایل</a>
+    <form action="/api/auth/logout" method="POST" class="m-0">
+      <button class="btn btn-outline-light btn-sm">خروج</button>
+    </form>
+  </div>
+</nav>
+<!-- <a href="/dashboard" class="nav-item <%= path === '/dashboard' ? 'active' : '' %>"> -->
+  <!-- <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
     <path d="M3 10L12 3l9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>
   </svg>
   <span>خانه</span>
@@ -41,7 +52,7 @@
     </svg>
     <span>خروج</span>
   </button>
-</form>
+</form> -->
 
   <% } else { %>
     <!-- حالت مهمان (لاگین نشده) -->

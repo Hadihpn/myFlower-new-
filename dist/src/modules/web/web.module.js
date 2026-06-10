@@ -8,15 +8,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebModule = void 0;
 const common_1 = require("@nestjs/common");
-const users_module_1 = require("../users/users.module");
 const web_controller_1 = require("./web.controller");
+const user_plant_selections_module_1 = require("../user-plant-selections/user-plant-selections.module");
+const care_plan_module_1 = require("../care-plan/care-plan.module");
+const sensor_readings_module_1 = require("../sensor-readings/sensor-readings.module");
+const devices_module_1 = require("../devices/devices.module");
+const web_service_1 = require("./web.service");
 let WebModule = class WebModule {
 };
 exports.WebModule = WebModule;
 exports.WebModule = WebModule = __decorate([
     (0, common_1.Module)({
-        imports: [users_module_1.UsersModule],
+        imports: [devices_module_1.DevicesModule, user_plant_selections_module_1.UserPlantSelectionsModule, care_plan_module_1.CarePlanModule, sensor_readings_module_1.SensorReadingsModule],
         controllers: [web_controller_1.WebController],
+        providers: [web_service_1.WebService],
     })
 ], WebModule);
 //# sourceMappingURL=web.module.js.map
