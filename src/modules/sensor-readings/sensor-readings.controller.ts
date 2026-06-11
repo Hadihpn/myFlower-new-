@@ -38,7 +38,8 @@ export class SensorReadingsController {
 
   @Post()
   @Public()
-  @UseGuards(DeviceAuthGuard, DeviceRateLimitGuard)
+  @UseGuards(DeviceAuthGuard)
+  // @UseGuards(DeviceAuthGuard, DeviceRateLimitGuard)
   @ApiSecurity('DeviceId')
   @ApiSecurity('DeviceToken')
   @ApiOperation({ summary: 'Submit sensor reading (Device Auth)' })
