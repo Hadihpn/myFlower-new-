@@ -21,7 +21,6 @@ const sensor_query_dto_1 = require("./dto/sensor-query.dto");
 const device_auth_guard_1 = require("../../common/guards/device-auth.guard");
 const device_auth_decorator_1 = require("../../common/decorators/device-auth.decorator");
 const public_decorator_1 = require("../../common/decorators/public.decorator");
-const DeviceRateLimitGuard_guard_1 = require("../../common/guards/DeviceRateLimitGuard.guard");
 const UserRateLimitGuard_guard_1 = require("../../common/guards/UserRateLimitGuard.guard");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const chart_query_dto_1 = require("./dto/chart-query.dto");
@@ -51,7 +50,7 @@ exports.SensorReadingsController = SensorReadingsController;
 __decorate([
     (0, common_1.Post)(),
     (0, public_decorator_1.Public)(),
-    (0, common_1.UseGuards)(device_auth_guard_1.DeviceAuthGuard, DeviceRateLimitGuard_guard_1.DeviceRateLimitGuard),
+    (0, common_1.UseGuards)(device_auth_guard_1.DeviceAuthGuard),
     (0, swagger_1.ApiSecurity)('DeviceId'),
     (0, swagger_1.ApiSecurity)('DeviceToken'),
     (0, swagger_1.ApiOperation)({ summary: 'Submit sensor reading (Device Auth)' }),
