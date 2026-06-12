@@ -4,8 +4,7 @@
     <div>
       <h4 class="mb-1">سلام <%= user?.fullName || "کاربر" %> 👋</h4>
       <small class="text-muted">به پنل مدیریت گیاهان خوش آمدید</small>
-    </div>
-  </div>
+    </div></div>
 
   <!-- SUMMARY CARDS -->
   <div class="row g-3 mb-4">
@@ -16,7 +15,6 @@
         <h4 id="plants-count">0</h4>
       </div>
     </div>
-
     <div class="col-6 col-lg-3">
       <div class="card-dash text-center">
         <div class="mb-2">📟</div>
@@ -24,7 +22,6 @@
         <h4 id="devices-count">0</h4>
       </div>
     </div>
-
     <div class="col-6 col-lg-3">
       <div class="card-dash text-center">
         <div class="mb-2">✅</div>
@@ -32,7 +29,6 @@
         <h4 id="tasks-count">0</h4>
       </div>
     </div>
-  </div>
 
   <!-- MAIN GRID: Plants + Tasks -->
   <div class="row g-4 mb-4">
@@ -56,113 +52,55 @@
     </div>
   </div>
 
-  <!-- SENSOR CHART -->
+  <!-- SENSOR CHART - full width -->
   <div class="row">
     <div class="col-12">
       <div class="card-dash">
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-          <h5 class="mb-0">وضعیت سنسورها (۷ روز اخیر)</h5>
-          <button
-            class="btn btn-sm btn-outline-success"
-            type="button"
-            onclick="resetSensorChartZoom()"
-          >
-            ریست زوم
-          </button>
-        </div>
-
-        <div class="chart-wrapper">
-          <canvas id="sensorChart"></canvas>
-        </div>
-
-        <small class="text-muted d-block mt-2">
-          روی موبایل با دو انگشت زوم کنید و برای جابجایی، نمودار را به چپ و راست بکشید.
-        </small>
+        <h5 class="mb-3">وضعیت سنسورها (۷ روز اخیر)</h5>
+        <canvas id="sensorChart" height="80"></canvas>
       </div>
     </div>
   </div>
 </div>
 
-<style>
-  .chart-wrapper {
-    position: relative;
-    width: 100%;
-    height: 360px;
-  }
-
-  @media (max-width: 768px) {
-    .chart-wrapper {
-      height: 280px;
-    }
-  }
-
-  #plants-container img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-  }
-</style>
-
-<!-- ترتیب درست -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/hammerjs"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
 
 <script>
-  let sensorChartInstance = null;
-
   async function loadDashboard() {
-    try {
-      const res = await fetch('/api/getDashboardData', {
-        credentials: 'include',
-      });
+    const res = await fetch('/api/getDashboardData', {
+      credentials: 'include',
+    });
 
-      if (!res.ok) {
-        throw new Error('خطا در دریافت اطلاعات داشبورد');
-      }
+    const data = await res.json();
 
-      const data = await res.json();
-
-      renderSummary(data);
-      renderPlants(data.plants || []);
-      renderTasks(data.todayTasks || []);
-      renderChart(data.devices || []);
-    } catch (error) {
-      console.error('Dashboard load error:', error);
-    }
+    renderSummary(data);
+    renderPlants(data.plants);
+    renderTasks(data.todayTasks);
+    renderChart(data.devices);
+    //  deviceCount: devices.length,
+    //     devices: devices$,
+    //     todayTasks,
   }
 
   function renderSummary(data) {
-    document.getElementById('plants-count').innerText = (data.plants || []).length;
-    document.getElementById('devices-count').innerText = data.deviceCount || 0;
-    document.getElementById('tasks-count').innerText = (data.todayTasks || []).length;
+    document.getElementById('plants-count').innerText = data.plants.length;
+    document.getElementById('devices-count').innerText = data.deviceCount;
+    document.getElementById('tasks-count').innerText = data.todayTasks.length;
+    // document.getElementById('humidity').innerText = data.humidity + '%';
   }
 
   function renderPlants(plants) {
     const container = document.getElementById('plants-container');
     container.innerHTML = '';
 
-    if (!plants.length) {
-      container.innerHTML = `
-        <div class="col-12">
-          <div class="text-muted text-center py-4">هنوز گیاهی ثبت نشده است.</div>
-        </div>
-      `;
-      return;
-    }
-
     plants.forEach((p) => {
       const html = `
-        <div class="col-6 col-lg-3">
-          <div class="p-3 border rounded bg-white h-100">
-            <img
-              src="${p.imageUrl || 'https://via.placeholder.com/300x200?text=Plant'}"
-              alt="${p.name || 'plant'}"
-              class="img-fluid rounded mb-2"
-            >
-            <h6 class="mb-0">${p.name || 'بدون نام'}</h6>
-          </div>
-        </div>
+      <div class="col-6 col-lg-3">
+    <div class="p-3 border rounded bg-white">
+      <img src="${p.imageUrl}" alt="${p.name}" class="img-fluid rounded mb-2">
+      <h6>${p.name}</h6>
+    </div>
+  </div>
       `;
 
       container.innerHTML += html;
@@ -173,190 +111,69 @@
     const list = document.getElementById('tasks-list');
     list.innerHTML = '';
 
-    if (!tasks.length) {
-      list.innerHTML = `
-        <li class="list-group-item text-muted">امروز کاری ثبت نشده است.</li>
-      `;
-      return;
-    }
-
     tasks.forEach((t) => {
       const li = document.createElement('li');
+
       li.className = 'list-group-item d-flex align-items-center';
 
       li.innerHTML = `
         <input type="checkbox" class="form-check-input me-2">
-        <span>${t.taskType || 'تسک'}</span>
+        ${t.taskType}
       `;
 
       list.appendChild(li);
     });
   }
-
   function renderChart(devices) {
     const ctx = document.getElementById('sensorChart');
     const chartData = buildChartData(devices);
+    if (!chartData) return;
 
-    if (!chartData) {
-      if (sensorChartInstance) {
-        sensorChartInstance.destroy();
-        sensorChartInstance = null;
-      }
-
-      const wrapper = document.querySelector('.chart-wrapper');
-      wrapper.innerHTML = `
-        <div class="d-flex align-items-center justify-content-center h-100 text-muted">
-          داده‌ای برای نمایش نمودار وجود ندارد.
-        </div>
-      `;
-      return;
-    }
-
-    // اگر قبلاً chart ساخته شده، destroy کن
-    if (sensorChartInstance) {
-      sensorChartInstance.destroy();
-    }
-
-    sensorChartInstance = new Chart(ctx, {
+    new Chart(ctx, {
       type: 'line',
       data: chartData,
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
-        elements: {
-          point: {
-            radius: 0,
-            hoverRadius: 4,
-            hitRadius: 12,
-          },
-          line: {
-            borderWidth: 2,
-          },
-        },
-        scales: {
-          x: {
-            ticks: {
-              maxTicksLimit: window.innerWidth < 768 ? 5 : 10,
-              maxRotation: 0,
-              autoSkip: true,
-            },
-          },
-          y: {
-            beginAtZero: false,
-            ticks: {
-              maxTicksLimit: 6,
-            },
-          },
-        },
         plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              boxWidth: 12,
-              usePointStyle: true,
-            },
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-          },
-          zoom: {
-            limits: {
-              x: {
-                min: 0,
-                max: chartData.labels.length - 1,
-                minRange: 3,
-              },
-            },
-            pan: {
-              enabled: true,
-              mode: 'x',
-              threshold: 10,
-            },
-            zoom: {
-              wheel: {
-                enabled: true,
-              },
-              pinch: {
-                enabled: true,
-              },
-              drag: {
-                enabled: true,
-                backgroColor: 'rgba(32, 201, 151, 0.12)',
-                borderColor: '#20c997',
-                borderWidth: 1,
-              },
-              mode: 'x',
-            },
-          },
+          legend: { position: 'bottom' },
         },
       },
     });
-
-    window.sensorChart = sensorChartInstance;
-  }
-
-  function resetSensorChartZoom() {
-    if (window.sensorChart) {
-      window.sensorChart.resetZoom();
-    }
   }
 
   const DEVICE_COLORS = ['#20c997', '#ff6384', '#36a2eb', '#ffce56', '#9966ff'];
 
   function buildChartData(devices) {
-    if (!devices || !devices.length) return null;
+    if (!devices?.length) return null;
 
-    const firstDevice = devices.find(
-      (device) => Array.isArray(device.latestReadings) && device.latestReadings.length
-    );
-
-    if (!firstDevice) return null;
-
-    const labels = [...firstDevice.latestReadings]
-      .reverse()
-      .map((r) =>
-        new Date(r.timestamp).toLocaleDateString('fa-IR', {
-          month: 'short',
-          day: 'numeric',
-        })
-      );
+    // از readings اولین device برچسب زمانی می‌گیریم (همه devices بازه یکسانی دارند)
+    const labels = devices[0].latestReadings
+      .map((r) => new Date(r.timestamp).toLocaleDateString())
+      .reverse(); 
 
     const datasets = [];
 
     devices.forEach((device, i) => {
-      if (!Array.isArray(device.latestReadings) || !device.latestReadings.length) return;
-
       const color = DEVICE_COLORS[i % DEVICE_COLORS.length];
-      const readings = [...device.latestReadings].reverse();
+      const readings = [...device.latestReadings].reverse(); // ASC برای chart
 
       datasets.push({
-        label: `${device.name} - Humidity`,
+        label: `${device.name} – Humidity`,
         data: readings.map((r) => r.humidity),
         borderColor: color,
         backgroundColor: color + '33',
-        tension: 0.35,
-        fill: false,
+        tension: 0.4,
       });
 
       datasets.push({
-        label: `${device.name} - Temperature`,
+        label: `${device.name} – Temperature`,
         data: readings.map((r) => r.temperature),
         borderColor: color,
-        borderDash: [6, 6],
-        tension: 0.35,
-        fill: false,
+        borderDash: [5, 5], // خط‌چین برای تمایز temp از humidity
+        tension: 0.4,
       });
     });
 
-    if (!datasets.length) return null;
-
     return { labels, datasets };
   }
-
   loadDashboard();
 </script>
