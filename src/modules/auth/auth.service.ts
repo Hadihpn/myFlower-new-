@@ -28,8 +28,8 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto): Promise<AuthRegisterResponse> {
-    const { email, password, fullName, phoneNumber } = registerDto;
-
+    let { email, password, fullName, phoneNumber } = registerDto;
+    email = email.toLowerCase()
     // Check if user already exists
     const existingUser = await this.userRepository.findOne({
       where: { email },
@@ -56,8 +56,8 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<AuthResponse> {
-    const { email, password } = loginDto;
-
+    let { email, password } = loginDto;
+    email = email.toLowerCase()
     // Find user
     const user = await this.userRepository
       .createQueryBuilder('user')
